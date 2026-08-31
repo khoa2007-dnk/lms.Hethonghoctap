@@ -128,12 +128,23 @@
     .dgnl-nav-square { width: 36px; height: 36px; min-width: 36px; background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #ffffff; cursor: pointer; transition: all 0.2s ease-in-out; user-select: none; font-size: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
     .dgnl-nav-square:hover { background-color: rgba(255, 255, 255, 0.25); border-color: #ffffff; transform: translateY(-2px); }
     .dgnl-nav-square.answered { background-color: #198754; border-color: #ffffff; color: #ffffff; box-shadow: 0 0 10px rgba(25, 135, 84, 0.8); }
-    #dgnl-question-nav { display: grid !important; grid-template-columns: repeat(15, 36px) !important; gap: 6px !important; justify-content: start !important; align-content: start !important; max-height: 135px !important; overflow-y: auto !important; overflow-x: hidden !important; padding: 4px 10px !important; margin: 0 !important; }
+    #dgnl-question-nav { 
+        display: flex !important; 
+        flex-wrap: wrap !important; 
+        gap: 6px !important; 
+        justify-content: center !important; 
+        align-content: flex-start !important; 
+        max-height: 175px !important; /* Đã nới rộng chiều cao để chứa đủ 4-5 dòng */
+        overflow-y: auto !important; 
+        overflow-x: hidden !important; 
+        padding: 4px 10px !important; 
+        margin: 0 !important; 
+    }
     #dgnl-question-nav::-webkit-scrollbar { width: 4px !important; }
     #dgnl-question-nav::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.5) !important; border-radius: 10px !important; }
-    @media (max-width: 1199px) { #dgnl-question-nav { grid-template-columns: repeat(10, 36px) !important; } }
-    @media (max-width: 768px) { #dgnl-question-nav { grid-template-columns: repeat(8, 36px) !important; } }
-    @media (max-width: 576px) { #dgnl-question-nav { grid-template-columns: repeat(5, 34px) !important; gap: 6px !important; } .dgnl-nav-square { width: 34px !important; height: 34px !important; min-width: 34px !important; font-size: 0.95rem !important; } }
+    @media (max-width: 576px) { 
+        .dgnl-nav-square { width: 34px !important; height: 34px !important; min-width: 34px !important; font-size: 0.95rem !important; } 
+    }
     .q-content { font-size: 1.05rem; color: #212529; line-height: 1.6; }
     .q-options { margin-top: 15px; }
     /* =================================================================== */
