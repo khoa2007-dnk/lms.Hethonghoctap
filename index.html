@@ -1078,30 +1078,65 @@
 // BIẾN TOÀN CỤC CHUNG
 // ===================================================================
 // --- ĐƯỜNG LINK API CỦA THẦY KHOA ---
-const API_URL = "https://script.google.com/macros/s/AKfycbwrL_MRP04NtG5ToGA5AAG5hrPgDnxYqElRylqpDJq-nL6GGaQI9llGvwgrGHU0-MGi/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzl-XQ4YEK2vi1nxwbokOSSevBL0ixjY-FMh7WqBWbFKVKVoRUyqPx4MEf2QSptfYfY/exec";
 
-// --- TRẠM CHUYỂN MẠCH API TỰ ĐỘNG ---
+// ===================================================================
+// TRẠM CHUYỂN MẠCH API TỰ ĐỘNG (BẢN TURBO - TẢI DỮ LIỆU SIÊU TỐC)
+// ===================================================================
 window.createAPIChain = function(onSuccess, onFailure) {
     return new Proxy({}, {
         get: function(target, prop) {
+            // Nhận diện cú pháp then / catch / withSuccessHandler
             if (prop === 'withSuccessHandler' || prop === 'then') {
                 return function(cb) { return window.createAPIChain(cb, onFailure); }
             }
             if (prop === 'withFailureHandler' || prop === 'catch') {
                 return function(cb) { return window.createAPIChain(onSuccess, cb); }
             }
+            
+            // Xử lý thực thi hàm
             return async function(...args) {
                 try {
+                    // 1. Liệt kê các lệnh "Đọc" dữ liệu nặng cần được tăng tốc
+                    const readActions = [
+                        'getTeacherData', 'getAssignedLessons', 'getStudentList', 
+                        'getStudentProfiles', 'getMultiExams', 'getUniqueClasses', 
+                        'getClassroomData', 'getAvailableExamsForStudent'
+                    ];
+                    const isReadAction = readActions.includes(prop);
+                    
+                    // Tạo chìa khóa lưu trữ cho từng lệnh riêng biệt
+                    const cacheKey = 'TURBO_CACHE_' + prop + '_' + JSON.stringify(args);
+
+                    // 2. TỐC ĐỘ BÀN THỜ: Nếu có dữ liệu cũ -> Bung ra màn hình ngay lập tức (0.01 giây)
+                    let cachedData = sessionStorage.getItem(cacheKey);
+                    if (isReadAction && cachedData) {
+                        if (onSuccess) onSuccess(JSON.parse(cachedData));
+                    }
+
+                    // 3. CHẠY NGẦM: Bắn tín hiệu lên Google lấy dữ liệu mới nhất (không làm đơ web)
                     let response = await fetch(API_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({ action: prop, args: args })
                     });
                     let result = await response.json();
-                    if (onSuccess) onSuccess(result);
+
+                    // 4. KIỂM TRA ĐỐI CHIẾU: Nếu dữ liệu mới có thay đổi (điểm mới, bài mới)
+                    if (isReadAction) {
+                        let newString = JSON.stringify(result);
+                        if (newString !== cachedData) {
+                            sessionStorage.setItem(cacheKey, newString); // Lưu đè bộ nhớ
+                            if (onSuccess) onSuccess(result); // Âm thầm cập nhật phần giao diện bị lệch
+                        }
+                    } else {
+                        // Nếu là lệnh Ghi/Sửa/Xóa (VD: nộp bài, cho điểm) thì chạy bình thường
+                        if (onSuccess) onSuccess(result);
+                    }
+                    
                     return result;
                 } catch (error) {
-                    console.error("Lỗi API:", error);
+                    console.error("Lỗi API Turbo:", error);
                     if (onFailure) onFailure(error);
                 }
             };
@@ -1111,6 +1146,7 @@ window.createAPIChain = function(onSuccess, onFailure) {
 
 // Khai báo biến toàn cục tuyệt đối
 window.callAPI = window.createAPIChain(null, null);
+    
 let currentStudentId = "", currentStudentName = "", allTeacherData = [], currentLessonsData = [], currentLessons = [], canvas, ctx, drawing = false, paths = [], currentPath = [], currentImgBase64 = "", activeRow, activeStudent, activeLesson, activeUrls = [], activeIdx = 0, currentAssignedLessons = [], isEditingLesson = false, editLessonRow, editOldFileUrl, globalStudentsData = [], currentViewedStudent = null;
 let stuTotalSubmitted = 0, stuGraded = 0, stuSumScore = 0;
 let editOldSolutionUrl = ""; 
