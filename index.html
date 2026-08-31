@@ -1081,7 +1081,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzl-XQ4YEK2vi1nxwbokOSSevBL0ixjY-FMh7WqBWbFKVKVoRUyqPx4MEf2QSptfYfY/exec";
 
 // ===================================================================
-// TRẠM CHUYỂN MẠCH API TỰ ĐỘNG (BẢN TURBO - TẢI DỮ LIỆU SIÊU TỐC)
+// TRẠM CHUYỂN MẠCH API TỰ ĐỘNG (BẢN TURBO MAX - LƯU VĨNH VIỄN)
 // ===================================================================
 window.createAPIChain = function(onSuccess, onFailure) {
     return new Proxy({}, {
@@ -1106,15 +1106,15 @@ window.createAPIChain = function(onSuccess, onFailure) {
                     const isReadAction = readActions.includes(prop);
                     
                     // Tạo chìa khóa lưu trữ cho từng lệnh riêng biệt
-                    const cacheKey = 'TURBO_CACHE_' + prop + '_' + JSON.stringify(args);
+                    const cacheKey = 'TURBO_MAX_' + prop + '_' + JSON.stringify(args);
 
-                    // 2. TỐC ĐỘ BÀN THỜ: Nếu có dữ liệu cũ -> Bung ra màn hình ngay lập tức (0.01 giây)
-                    let cachedData = sessionStorage.getItem(cacheKey);
+                    // 2. TỐC ĐỘ BÀN THỜ: Dùng localStorage để lưu vĩnh viễn trên máy
+                    let cachedData = localStorage.getItem(cacheKey);
                     if (isReadAction && cachedData) {
                         if (onSuccess) onSuccess(JSON.parse(cachedData));
                     }
 
-                    // 3. CHẠY NGẦM: Bắn tín hiệu lên Google lấy dữ liệu mới nhất (không làm đơ web)
+                    // 3. CHẠY NGẦM: Bắn tín hiệu lên Google lấy dữ liệu mới nhất
                     let response = await fetch(API_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1122,12 +1122,12 @@ window.createAPIChain = function(onSuccess, onFailure) {
                     });
                     let result = await response.json();
 
-                    // 4. KIỂM TRA ĐỐI CHIẾU: Nếu dữ liệu mới có thay đổi (điểm mới, bài mới)
+                    // 4. KIỂM TRA ĐỐI CHIẾU: Cập nhật nếu có sự thay đổi
                     if (isReadAction) {
                         let newString = JSON.stringify(result);
                         if (newString !== cachedData) {
-                            sessionStorage.setItem(cacheKey, newString); // Lưu đè bộ nhớ
-                            if (onSuccess) onSuccess(result); // Âm thầm cập nhật phần giao diện bị lệch
+                            localStorage.setItem(cacheKey, newString); // Lưu đè bộ nhớ
+                            if (onSuccess) onSuccess(result); // Âm thầm cập nhật giao diện
                         }
                     } else {
                         // Nếu là lệnh Ghi/Sửa/Xóa (VD: nộp bài, cho điểm) thì chạy bình thường
@@ -1218,6 +1218,12 @@ function logout() {
     // Xóa bộ nhớ đăng nhập
     localStorage.removeItem('lms_session'); 
     
+    // ÉP HỆ THỐNG TỰ ĐỘNG QUAY VỀ TAB TỔNG QUAN
+    let homeTab = document.getElementById('home-tab');
+    if (homeTab) {
+        homeTab.click(); 
+    }
+    
     // Ẩn các không gian làm việc
     document.getElementById('dashboard').style.display = 'none'; 
     document.getElementById('teacher-dashboard').style.display = 'none'; 
@@ -1227,7 +1233,7 @@ function logout() {
     document.getElementById('user').value = ''; 
     document.getElementById('pass').value = ''; 
 
-    // --- BỔ SUNG: TỰ ĐỘNG ĐÓNG TẤT CẢ MENU SIDEBAR ---
+    // Tự động đóng tất cả Menu Sidebar
     let teacherSidebar = document.getElementById('teacherModernSidebar');
     let teacherOverlay = document.getElementById('sidebarOverlay');
     if (teacherSidebar) teacherSidebar.classList.remove('show');
