@@ -66,6 +66,36 @@
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         opacity: 0; cursor: pointer; z-index: 999; /* Đẩy input lên trên cùng */
     }
+    /* =================================================================== */
+    /* PREMIUM UI: BẢNG THEO DÕI TIẾN TRÌNH CHẤM BÀI (TRACKING)            */
+    /* =================================================================== */
+    .tracking-card { background: #f8faff; border-radius: 20px; padding: 24px; text-align: left; font-family: 'Segoe UI', sans-serif; }
+    .tracking-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .tracking-title { color: #885CF6; font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; margin: 0; }
+    .tracking-eta { background: #e0e5ff; color: #885CF6; padding: 5px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; box-shadow: 0 2px 5px rgba(90, 94, 185, 0.15); }
+    .timeline-item { display: flex; margin-bottom: 25px; position: relative; }
+    .timeline-item::before { content: ''; position: absolute; left: 14px; top: 30px; bottom: -25px; width: 3px; background: #e0e5ff; z-index: 1; border-radius: 3px; }
+    .timeline-item:last-child::before { display: none; }
+    .timeline-item.done::before { background: #885CF6; }
+    .timeline-item.active::before { background: linear-gradient(to bottom, #885CF6, #e0e5ff); }
+    .timeline-icon { width: 30px; height: 30px; border-radius: 50%; z-index: 2; display: flex; justify-content: center; align-items: center; background: white; border: 3px solid #e0e5ff; flex-shrink: 0; margin-right: 18px; box-shadow: 0 0 0 4px #f8faff; }
+    .timeline-item.done .timeline-icon { background: #885CF6; border-color: #885CF6; color: white; font-size: 0.9rem; }
+    .timeline-item.active .timeline-icon { border-color: #885CF6; border-width: 4px; position: relative; }
+    .timeline-item.active .timeline-icon::after { content: ''; width: 12px; height: 12px; background: #885CF6; border-radius: 50%; animation: trackPulse 1.5s infinite; }
+    .timeline-item.pending .timeline-icon { border-color: #e2e8f0; background: #f1f5f9; }
+    .timeline-content { flex-grow: 1; margin-top: 3px; }
+    .timeline-content h6 { margin: 0 0 5px 0; font-weight: 800; color: #1e293b; font-size: 1.05rem; }
+    .timeline-content p { margin: 0; font-size: 0.85rem; color: #64748b; font-weight: 500; }
+    .timeline-status { font-size: 0.75rem; font-weight: bold; padding: 4px 10px; border-radius: 8px; letter-spacing: 0.5px; }
+    .status-done { background: #dcfce7; color: #15803d; }
+    .status-active { background: #fff7ed; color: #c2410c; }
+    .status-pending { background: #f1f5f9; color: #94a3b8; }
+    .tracking-footer { margin-top: 35px; background: white; border-radius: 16px; padding: 18px; box-shadow: 0 8px 20px rgba(90, 94, 185, 0.08); border: 1px solid rgba(90, 94, 185, 0.1); }
+    .tf-text { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: bold; font-size: 0.9rem; color: #885CF6; }
+    .tf-bar { height: 8px; background: #e0e5ff; border-radius: 10px; overflow: hidden; position: relative; }
+    .tf-progress { width: 65%; background: linear-gradient(90deg, #885CF6, #c4b5fd); height: 100%; border-radius: 10px; animation: trackSlide 2.5s ease-in-out infinite alternate; }
+    @keyframes trackSlide { 0% { width: 40%; } 100% { width: 85%; } }
+    @keyframes trackPulse { 0% { transform: scale(0.8); opacity: 0.8; } 100% { transform: scale(1.8); opacity: 0; } }
 /* --- GIAO DIỆN SIDEBAR SÁNG MÀU TƯƠI THIỆN --- */
 .modern-sidebar {
     position: fixed; top: 0; left: -280px; width: 270px; height: 100vh;
@@ -2451,7 +2481,7 @@ function checkDGNLStatus() {
                     borderColor = '#198754'; iconBg = '#198754'; titleColor = '#198754';
                 } else {
                     statusHtml = `<div class="mt-2 text-center"><span class="badge bg-secondary shadow-sm px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split"></i> Đang chờ chấm...</span></div>`;
-                    btnHtml = `<button class="btn btn-outline-secondary w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" disabled><i class="bi bi-shield-lock-fill me-1"></i> ĐÃ NỘP BÀI</button>`;
+                    btnHtml = `<button class="btn text-white w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" style="background: linear-gradient(135deg, #885CF6 0%, #c4b5fd 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="openExamTrackingModal('${ex.examTitle}')"><i class="bi bi-radar me-1"></i> XEM TIẾN TRÌNH</button>`;
                     borderColor = '#6c757d'; iconBg = '#6c757d'; titleColor = '#6c757d';
                 }
             } else {
@@ -4323,6 +4353,86 @@ document.addEventListener('show.bs.modal', function (event) {
         if(typeof window.clearPremiumUpload === 'function') window.clearPremiumUpload();
     }
 });
+</script>
+  <script>
+// HÀM HIỂN THỊ TIẾN TRÌNH CHẤM BÀI (PREMIUM UI)
+window.openExamTrackingModal = function(examTitle) {
+    let today = new Date();
+    let dateStr = today.getDate() + "/" + (today.getMonth()+1) + "/" + today.getFullYear();
+    
+    Swal.fire({
+        showConfirmButton: false,
+        showCloseButton: true,
+        width: '480px',
+        padding: '0',
+        customClass: { popup: 'rounded-4 shadow-lg border-0 bg-transparent' },
+        html: `
+        <div class="tracking-card shadow-lg">
+            <div class="tracking-header">
+                <h4 class="tracking-title"><i class="bi bi-box-seam-fill"></i> Tiến Trình Chấm Bài</h4>
+                <span class="tracking-eta">CẬP NHẬT: ${dateStr}</span>
+            </div>
+
+            <!-- Giai đoạn 1 -->
+            <div class="timeline-item done">
+                <div class="timeline-icon"><i class="bi bi-check-lg"></i></div>
+                <div class="timeline-content d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6>Nộp bài thành công</h6>
+                        <p>Hệ thống đã ghi nhận</p>
+                    </div>
+                    <div class="timeline-status status-done">Done</div>
+                </div>
+            </div>
+
+            <!-- Giai đoạn 2 -->
+            <div class="timeline-item done">
+                <div class="timeline-icon"><i class="bi bi-check-lg"></i></div>
+                <div class="timeline-content d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6>Đồng bộ máy chủ</h6>
+                        <p>Lưu trữ an toàn tuyệt đối</p>
+                    </div>
+                    <div class="timeline-status status-done">Done</div>
+                </div>
+            </div>
+
+            <!-- Giai đoạn 3 (Đang diễn ra) -->
+            <div class="timeline-item active">
+                <div class="timeline-icon"></div>
+                <div class="timeline-content d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6>Giáo viên đang chấm</h6>
+                        <p>Thầy Khoa đang xem xét bài</p>
+                    </div>
+                    <div class="timeline-status status-active">Live</div>
+                </div>
+            </div>
+
+            <!-- Giai đoạn 4 (Chưa tới) -->
+            <div class="timeline-item pending">
+                <div class="timeline-icon"></div>
+                <div class="timeline-content d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6>Công bố điểm số</h6>
+                        <p>Chờ thông báo chính thức</p>
+                    </div>
+                    <div class="timeline-status status-pending">Pending</div>
+                </div>
+            </div>
+
+            <div class="tracking-footer">
+                <div class="tf-text">
+                    <span><i class="bi bi-truck"></i> Trạng thái môn: ${examTitle.toUpperCase()}</span>
+                </div>
+                <div class="tf-bar">
+                    <div class="tf-progress"></div>
+                </div>
+            </div>
+        </div>
+        `
+    });
+};
 </script>
 </body>
 </html>
