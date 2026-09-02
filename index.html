@@ -4072,5 +4072,41 @@ function toggleStudentSidebar() {
 }
 </script>
 </script>
+  <!-- =================================================================== -->
+<!-- GIAO DIỆN VÀ CẢM BIẾN CẢNH BÁO MẤT KẾT NỐI INTERNET TOÀN HỆ THỐNG -->
+<!-- =================================================================== -->
+<div id="global-offline-warning" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 99999; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; backdrop-filter: blur(5px);">
+    <i class="bi bi-wifi-off" style="font-size: 5rem; color: #dc3545; margin-bottom: 20px; animation: pulse 1.5s infinite;"></i>
+    <h2 class="fw-bold text-danger">MẤT KẾT NỐI INTERNET!</h2>
+    <p class="fs-5 mt-2">Hệ thống đang tạm gián đoạn vì không có mạng.</p>
+    <p class="text-light">Vui lòng kiểm tra lại đường truyền Wi-Fi/4G của thiết bị.<br>Màn hình này sẽ tự động biến mất ngay khi có mạng trở lại.</p>
+</div>
+
+<style>
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.7; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+</style>
+
+<script>
+    // Hàm hiển thị/ẩn cảnh báo
+    function toggleOfflineWarning() {
+        const offlineScreen = document.getElementById('global-offline-warning');
+        if (navigator.onLine) {
+            offlineScreen.style.display = 'none'; // Có mạng -> Ẩn
+        } else {
+            offlineScreen.style.display = 'flex'; // Mất mạng -> Hiện đè lên tất cả
+        }
+    }
+
+    // Lắng nghe sự kiện cắm/rút cáp mạng hoặc tắt/bật Wi-Fi
+    window.addEventListener('online', toggleOfflineWarning);
+    window.addEventListener('offline', toggleOfflineWarning);
+
+    // Kiểm tra ngay khi vừa tải xong trang web
+    toggleOfflineWarning();
+</script>
 </body>
 </html>
