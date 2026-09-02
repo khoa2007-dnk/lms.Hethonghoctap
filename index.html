@@ -64,7 +64,7 @@
     .premium-drop-sub { font-size: 0.85rem; color: #64748b; font-weight: 600; margin-top: 5px; }
     .premium-file-input {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        opacity: 0; cursor: pointer; z-index: 10;
+        opacity: 0; cursor: pointer; z-index: 999; /* Đẩy input lên trên cùng */
     }
 /* --- GIAO DIỆN SIDEBAR SÁNG MÀU TƯƠI THIỆN --- */
 .modern-sidebar {
@@ -4275,12 +4275,17 @@ window.clearPremiumUpload = function() {
     const display = document.getElementById('file-name-display');
     const clearBtn = document.getElementById('btn-clear-upload');
     const uploadArea = document.getElementById('premium-upload-area');
+    const statusDiv = document.getElementById('upload-status'); // Reset luôn cả thông báo đang xử lý
     
-    if(input) input.value = ''; // Xóa sạch file đã chọn
-    if(display) display.innerHTML = ''; // Xóa ảnh thu nhỏ
-    if(clearBtn) clearBtn.classList.add('d-none'); // Giấu nút xóa đi
+    // Gán trực tiếp giá trị rỗng thay vì dùng thuộc tính để xóa triệt để bộ nhớ trình duyệt
+    if(input) input.value = null; 
+    
+    if(display) display.innerHTML = ''; 
+    if(clearBtn) clearBtn.classList.add('d-none'); 
+    if(statusDiv) statusDiv.innerHTML = ''; 
+    
     if(uploadArea) {
-        uploadArea.style.borderColor = '#c4b5fd'; // Trả lại viền tím ban đầu
+        uploadArea.style.borderColor = '#c4b5fd'; 
         uploadArea.style.background = 'linear-gradient(180deg, #ffffff 0%, #f8f7ff 100%)';
     }
 };
