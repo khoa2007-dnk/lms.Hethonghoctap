@@ -18,6 +18,54 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
   <style>
+    /* =================================================================== */
+    /* PREMIUM UI: KHUNG TÌM KIẾM CO GIÃN (SEARCH TOGGLE)                  */
+    /* =================================================================== */
+    .premium-search-wrap { display: flex; justify-content: flex-end; width: 100%; }
+    .premium-search {
+        width: 48px; height: 48px; background: #ffffff;
+        border: 2px solid #24B1B1; border-radius: 24px;
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Hiệu ứng nảy */
+        overflow: hidden; display: flex; align-items: center; position: relative;
+    }
+    .premium-search.active {
+        width: 100%; border-color: #148b8b;
+        box-shadow: 0 10px 25px rgba(36, 177, 177, 0.15);
+    }
+    .premium-search-btn {
+        background: transparent; border: none; color: #24B1B1; font-size: 1.2rem;
+        width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; cursor: pointer; outline: none;
+    }
+    .premium-search-input {
+        width: 100%; border: none; outline: none; background: transparent;
+        color: #148b8b; font-weight: bold; padding-right: 15px;
+        opacity: 0; transition: opacity 0.3s;
+    }
+    .premium-search.active .premium-search-input { opacity: 1; }
+    .premium-search-input::placeholder { color: rgba(36, 177, 177, 0.5); }
+
+    /* =================================================================== */
+    /* PREMIUM UI: KHUNG KÉO THẢ NỘP FILE (FILE UPLOAD)                    */
+    /* =================================================================== */
+    .premium-drop {
+        background: linear-gradient(180deg, #ffffff 0%, #f8f7ff 100%);
+        border: 2px dashed #c4b5fd; border-radius: 16px;
+        padding: 40px 20px; text-align: center; position: relative;
+        transition: all 0.3s ease; cursor: pointer; overflow: hidden;
+    }
+    .premium-drop:hover {
+        border-color: #8b5cf6;
+        box-shadow: 0 18px 45px rgba(124, 58, 237, 0.12); /* Đổ bóng Premium */
+    }
+    .premium-drop-icon { font-size: 3.5rem; color: #8b5cf6; margin-bottom: 5px; transition: transform 0.3s; }
+    .premium-drop:hover .premium-drop-icon { transform: translateY(-5px); }
+    .premium-drop-title { font-weight: 800; color: #1e293b; font-size: 1.1rem; }
+    .premium-drop-sub { font-size: 0.85rem; color: #64748b; font-weight: 600; margin-top: 5px; }
+    .premium-file-input {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        opacity: 0; cursor: pointer; z-index: 10;
+    }
 /* --- GIAO DIỆN SIDEBAR SÁNG MÀU TƯƠI THIỆN --- */
 .modern-sidebar {
     position: fixed; top: 0; left: -280px; width: 270px; height: 100vh;
@@ -416,14 +464,21 @@
         <!-- TAB 2: KHO BÀI TẬP VÀ TÀI LIỆU (Giống cũ) -->
         <div class="tab-pane fade" id="tab-all" role="tabpanel">
           <div class="bg-white p-4 rounded-4 shadow-sm border mb-4">
-              <div class="border-bottom border-primary border-3 pb-2 mb-4 d-flex align-items-center"><h4 class="text-primary fw-bold m-0"><i class="bi bi-pencil-square me-2"></i>Toàn bộ Bài tập & Kiểm tra</h4></div>
+              <div class="border-bottom border-primary border-3 pb-2 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                  <h4 class="text-primary fw-bold m-0"><i class="bi bi-pencil-square me-2"></i>Toàn bộ Bài tập</h4>
+                  
+                  <!-- PREMIUM SEARCH TOGGLE (HỌC SINH) -->
+                  <div class="premium-search-wrap" style="width: auto; flex-grow: 1; max-width: 350px;">
+                      <div class="premium-search" id="studentSearchBox">
+                          <button class="premium-search-btn" onclick="document.getElementById('studentSearchBox').classList.toggle('active'); document.getElementById('searchStudentLesson').focus();">
+                              <i class="bi bi-search"></i>
+                          </button>
+                          <input type="text" id="searchStudentLesson" class="premium-search-input" placeholder="Tìm tên bài, chuyên đề..." onkeyup="filterStudentLessons()">
+                      </div>
+                  </div>
+              </div>
               <div id="lesson-list" class="row g-4"></div>
           </div>
-          <div class="bg-white p-4 rounded-4 shadow-sm border mb-5">
-              <div class="border-bottom border-success border-3 pb-2 mb-4 d-flex align-items-center"><h4 class="text-success fw-bold m-0"><i class="bi bi-journal-bookmark-fill me-2"></i>Tài Liệu Tham Khảo</h4></div>
-              <div id="material-list" class="row g-4"></div>
-          </div>
-        </div>
 
       </div>
     </div> 
@@ -1047,7 +1102,36 @@
   </div>
 
   <!-- CÁC MODAL HỌC SINH -->
-  <div class="modal fade" id="uploadModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-success text-white"><h5>Nộp Bài</h5></div><div class="modal-body"><p id="modal-lesson-name" class="fw-bold"></p><input class="form-control mb-2" type="file" id="fileInput" multiple><div id="upload-status" class="text-center fw-bold text-primary"></div></div><div class="modal-footer"><button class="btn btn-success w-100 fw-bold py-3 rounded-pill" id="btn-submit" onclick="submitAssignment()">NỘP BÀI NGAY</button></div></div></div></div>
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header bg-success text-white">
+          <h5 class="fw-bold mb-0"><i class="bi bi-cloud-arrow-up-fill me-2"></i>Nộp Bài</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4 bg-light">
+          <p id="modal-lesson-name" class="fw-bold text-primary fs-5 text-center mb-4"></p>
+          
+          <!-- PREMIUM UPLOAD AREA -->
+          <div class="premium-drop mb-3" id="premium-upload-area">
+              <i class="bi bi-cloud-arrow-up-fill premium-drop-icon"></i>
+              <div class="premium-drop-title">Nhấn hoặc Kéo thả ảnh vào đây</div>
+              <div class="premium-drop-sub">Hỗ trợ JPG, PNG (Tối đa 5MB)</div>
+              <!-- File input được ẩn đi nhưng vẫn phủ kín bề mặt để bấm/kéo thả -->
+              <input type="file" class="premium-file-input" id="fileInput" multiple accept="image/*" onchange="document.getElementById('file-name-display').innerHTML = '<i class=&quot;bi bi-check-circle-fill text-success&quot;></i> Đã chọn ' + this.files.length + ' tệp'">
+          </div>
+          <div id="file-name-display" class="small fw-bold text-success text-center mb-2"></div>
+          
+          <div id="upload-status" class="text-center fw-bold text-primary mt-2"></div>
+        </div>
+        <div class="modal-footer bg-white border-0">
+          <button class="btn btn-success w-100 fw-bold py-3 rounded-pill shadow-sm" id="btn-submit" onclick="submitAssignment()">
+            <i class="bi bi-send-check-fill me-1"></i> NỘP BÀI NGAY
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>  
   <div class="modal fade" id="reportCardModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-info text-white"><h5>Bảng Điểm</h5></div><div class="modal-body text-center bg-light"><h4 id="report-student-name" class="text-primary fw-bold mb-4"></h4><div class="row mb-3"><div class="col-6"><b id="rep-total">0</b><br><small>Đã nộp</small></div><div class="col-6"><b id="rep-graded">0</b><br><small>Đã chấm</small></div></div><div class="p-4 bg-white border border-info rounded"><h1 id="rep-avg" class="text-info">0.0</h1><small>ĐIỂM TRUNG BÌNH</small></div><button class="btn btn-danger w-100 mt-4 fw-bold rounded-pill" onclick="exportStudentPDF()">TẢI PHIẾU LIÊN LẠC PDF</button></div></div></div></div>
   <div class="modal fade" id="changePassModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="hcmue-modal-bar"></div><div class="modal-header bg-warning bg-opacity-10 text-dark border-bottom"><h5 class="modal-title"><i class="bi bi-key-fill me-2 text-warning"></i>ĐỔI MẬT KHẨU</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body p-4 bg-light"><label class="form-label fw-bold text-secondary small">Mật khẩu hiện tại</label><input type="password" id="old-pass" class="form-control p-3 mb-3 border-warning shadow-sm" placeholder="Nhập pass cũ..."><label class="form-label fw-bold text-secondary small">Mật khẩu mới</label><input type="password" id="new-pass" class="form-control p-3 border-warning shadow-sm" placeholder="Nhập pass mới..."></div><div class="modal-footer bg-white"><button id="btn-exec-change-pass" class="btn btn-warning w-100 py-3 rounded-pill fw-bold shadow" onclick="execChangePass()">XÁC NHẬN ĐỔI</button></div></div></div></div>
   <div class="modal fade" id="updateEmailModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-secondary text-white"><h5 class="fw-bold">Cập nhật Email</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-4"><input type="email" id="student-email-input" class="form-control p-3" placeholder="Nhập email..."></div><div class="modal-footer"><button class="btn btn-secondary w-100 py-3 rounded-pill fw-bold" onclick="execUpdateEmail()">LƯU EMAIL</button></div></div></div></div>
@@ -1102,6 +1186,36 @@
   </div>
 
   <script>
+// ===================================================================
+// BỘ LỌC TÌM KIẾM BÀI TẬP CHO HỌC SINH (GIAO DIỆN PREMIUM)
+// ===================================================================
+window.filterStudentLessons = function() {
+    // Lấy từ khóa học sinh gõ và chuyển thành chữ thường
+    let searchStr = document.getElementById('searchStudentLesson').value.toLowerCase().trim();
+    
+    // 1. Quét tìm trong danh sách Bài tập & Kiểm tra
+    let lessonCards = document.querySelectorAll('#lesson-list .col-md-6');
+    lessonCards.forEach(card => {
+        let title = card.querySelector('h5').innerText.toLowerCase();
+        // Nếu tiêu đề bài chứa từ khóa thì hiện, không thì ẩn đi
+        if (title.includes(searchStr)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // 2. Quét tìm luôn cả trong kho Tài liệu tham khảo bên dưới
+    let materialCards = document.querySelectorAll('#material-list .col-md-6');
+    materialCards.forEach(card => {
+        let title = card.querySelector('h5').innerText.toLowerCase();
+        if (title.includes(searchStr)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+};
 // ===================================================================
 // BIẾN TOÀN CỤC CHUNG
 // ===================================================================
