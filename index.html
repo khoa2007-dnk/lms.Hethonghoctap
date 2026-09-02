@@ -2481,8 +2481,15 @@ function renderMultiExamList(list) {
     let html = ''; 
     list.forEach(ex => {
         let targetHtml = ex.targetType === 'ALL' ? '<span class="badge bg-primary">Cả khối</span>' : '<span class="badge bg-info text-dark">Chỉ định</span>';
-        let statusBtn = ex.isActive ? `<button class="btn btn-sm btn-success fw-bold" onclick="toggleMultiExamStatus('${ex.id}', false)">Đang MỞ <i class="bi bi-circle-fill small text-white ms-1"></i></button>` : `<button class="btn btn-sm btn-secondary fw-bold" onclick="toggleMultiExamStatus('${ex.id}', true)">Đã ĐÓNG <i class="bi bi-lock-fill small ms-1"></i></button>`;
-        
+        let statusBtn = `
+        <div class="d-inline-flex align-items-center justify-content-center gap-2 bg-white border border-2 ${ex.isActive ? 'border-success' : 'border-secondary'} rounded-pill px-2 py-1 shadow-sm" style="transition: all 0.3s ease;">
+            <div class="form-check form-switch m-0 fs-5 d-flex align-items-center" title="Bật/Tắt kỳ thi">
+                <input class="form-check-input shadow-none m-0 ${ex.isActive ? 'border-success' : 'border-secondary'}" type="checkbox" style="cursor:pointer;" ${ex.isActive ? 'checked' : ''} onchange="toggleMultiExamStatus('${ex.id}', this.checked)">
+            </div>
+            <span class="small fw-bold ${ex.isActive ? 'text-success' : 'text-secondary'} mb-0" style="min-width: 85px; text-align: left; padding-top: 2px;">
+                ${ex.isActive ? 'Đang MỞ 🟢' : 'Đã ĐÓNG 🔴'}
+            </span>
+        </div>`;        
         // --- GỘP NÚT CHỨC NĂNG CHO GỌN ---
         let actionHtml = `
         <div class="d-flex justify-content-center align-items-center gap-1">
