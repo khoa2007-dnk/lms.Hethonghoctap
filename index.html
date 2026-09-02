@@ -1123,8 +1123,8 @@
       </div>
   </div>
 
-  <!-- CÁC MODAL HỌC SINH -->
-<div class="modal fade" id="uploadModal" tabindex="-1">
+<!-- CÁC MODAL HỌC SINH -->
+  <div class="modal fade" id="uploadModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg rounded-4">
         <div class="modal-header bg-success text-white">
@@ -1139,10 +1139,17 @@
               <i class="bi bi-cloud-arrow-up-fill premium-drop-icon"></i>
               <div class="premium-drop-title">Nhấn hoặc Kéo thả ảnh vào đây</div>
               <div class="premium-drop-sub">Hỗ trợ JPG, PNG (Tối đa 5MB)</div>
-              <!-- File input được ẩn đi nhưng vẫn phủ kín bề mặt để bấm/kéo thả -->
-              <input type="file" class="premium-file-input" id="fileInput" multiple accept="image/*" onchange="document.getElementById('file-name-display').innerHTML = '<i class=&quot;bi bi-check-circle-fill text-success&quot;></i> Đã chọn ' + this.files.length + ' tệp'">
+              <!-- Ép Z-Index cực đại để bắt dính thao tác kéo thả của học sinh -->
+              <input type="file" class="premium-file-input" id="fileInput" multiple accept="image/*" style="z-index: 999; cursor: pointer;" onchange="handlePremiumUpload(this)">
           </div>
-          <div id="file-name-display" class="small fw-bold text-success text-center mb-2"></div>
+          
+          <!-- HIỂN THỊ THUMBNAIL TỆP & NÚT XÓA -->
+          <div id="file-name-display" class="d-flex flex-wrap gap-2 justify-content-center mb-3"></div>
+          <div class="text-center mb-2">
+              <button type="button" class="btn btn-sm btn-outline-danger rounded-pill fw-bold d-none shadow-sm" id="btn-clear-upload" onclick="clearPremiumUpload()">
+                  <i class="bi bi-x-circle-fill"></i> Hủy chọn tệp (Chọn lại)
+              </button>
+          </div>
           
           <div id="upload-status" class="text-center fw-bold text-primary mt-2"></div>
         </div>
@@ -1153,7 +1160,7 @@
         </div>
       </div>
     </div>
-  </div>  
+  </div>
   <div class="modal fade" id="reportCardModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-info text-white"><h5>Bảng Điểm</h5></div><div class="modal-body text-center bg-light"><h4 id="report-student-name" class="text-primary fw-bold mb-4"></h4><div class="row mb-3"><div class="col-6"><b id="rep-total">0</b><br><small>Đã nộp</small></div><div class="col-6"><b id="rep-graded">0</b><br><small>Đã chấm</small></div></div><div class="p-4 bg-white border border-info rounded"><h1 id="rep-avg" class="text-info">0.0</h1><small>ĐIỂM TRUNG BÌNH</small></div><button class="btn btn-danger w-100 mt-4 fw-bold rounded-pill" onclick="exportStudentPDF()">TẢI PHIẾU LIÊN LẠC PDF</button></div></div></div></div>
   <div class="modal fade" id="changePassModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="hcmue-modal-bar"></div><div class="modal-header bg-warning bg-opacity-10 text-dark border-bottom"><h5 class="modal-title"><i class="bi bi-key-fill me-2 text-warning"></i>ĐỔI MẬT KHẨU</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body p-4 bg-light"><label class="form-label fw-bold text-secondary small">Mật khẩu hiện tại</label><input type="password" id="old-pass" class="form-control p-3 mb-3 border-warning shadow-sm" placeholder="Nhập pass cũ..."><label class="form-label fw-bold text-secondary small">Mật khẩu mới</label><input type="password" id="new-pass" class="form-control p-3 border-warning shadow-sm" placeholder="Nhập pass mới..."></div><div class="modal-footer bg-white"><button id="btn-exec-change-pass" class="btn btn-warning w-100 py-3 rounded-pill fw-bold shadow" onclick="execChangePass()">XÁC NHẬN ĐỔI</button></div></div></div></div>
   <div class="modal fade" id="updateEmailModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-secondary text-white"><h5 class="fw-bold">Cập nhật Email</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-4"><input type="email" id="student-email-input" class="form-control p-3" placeholder="Nhập email..."></div><div class="modal-footer"><button class="btn btn-secondary w-100 py-3 rounded-pill fw-bold" onclick="execUpdateEmail()">LƯU EMAIL</button></div></div></div></div>
