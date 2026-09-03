@@ -157,51 +157,43 @@
     #login-container:not([style*="display: none"]) ~ .modern-sidebar { display: none !important; }
     #login-container:not([style*="display: none"]) ~ .sidebar-overlay { display: none !important; }
 
-    /* MÀN HÌNH MÁY TÍNH: MẶC ĐỊNH LÀ THU GỌN THÀNH BIỂU TƯỢNG (SAAS CHUẨN) */
+    /* MÀN HÌNH MÁY TÍNH: MENU TRÁI LUÔN HIỆN, THU GỌN CHỈ CÒN ICON */
     @media (min-width: 992px) {
-        /* Thu gọn độ lớn của Sidebar cho tinh tế, không bị thô */
-        .modern-sidebar { left: 0 !important; width: 75px; padding: 15px 8px; border-radius: 0; }
-        .modern-sidebar.show { width: 260px; padding: 20px 15px; }
+        .modern-sidebar { left: 0 !important; width: 80px; padding: 20px 10px; border-radius: 0; align-items: center; }
+        .modern-sidebar.show { width: 260px; padding: 20px 15px; align-items: stretch; }
         .sidebar-overlay { display: none !important; }
         
-        /* Đẩy nội dung trang sang trái để né Sidebar và sang phải để né thanh ĐHSP */
-        #dashboard, #teacher-dashboard { 
-            padding-left: 75px; 
-            padding-right: 35px; /* Khắc phục lỗi đè thanh nhận diện ĐHSP */
-            transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            box-sizing: border-box;
-            width: 100%;
-            overflow-x: hidden;
-        }
+        /* Đẩy nội dung trang sang phải để né Menu */
+        #dashboard, #teacher-dashboard { padding-left: 80px; padding-right: 35px; transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; width: 100%; overflow-x: hidden; }
         
-        /* Căn giữa Icon, thu nhỏ kích thước icon để thanh thoát hơn */
-        .modern-sidebar:not(.show) .sidebar-item { padding: 10px 0; justify-content: center; transform: none !important; margin-bottom: 4px; }
-        .modern-sidebar:not(.show) .sidebar-item i { margin-right: 0 !important; font-size: 1.15rem; min-width: auto; }
-        .modern-sidebar:not(.show) .sidebar-brand { justify-content: center; padding: 0; margin-bottom: 25px; }
-        .modern-sidebar:not(.show) .sidebar-brand i { margin-right: 0 !important; font-size: 1.4rem !important; }
-        .modern-sidebar:not(.show) .sidebar-search { padding: 8px 0; justify-content: center; background: transparent; border: none; margin-bottom: 15px; }
-        .modern-sidebar:not(.show) .sidebar-search i { margin-right: 0 !important; font-size: 1.1rem; }
-        .modern-sidebar:not(.show) .sidebar-user { justify-content: center; border-top: none; padding-top: 5px; }
-        .modern-sidebar:not(.show) .sidebar-avatar { margin: 0; width: 34px; min-width: 34px; height: 34px; font-size: 0.8rem; }
+        /* HIỆU ỨNG THU GỌN (Chỉ hiện Icon, Căn giữa hoàn hảo) */
+        .modern-sidebar:not(.show) .sidebar-item { padding: 12px 0; justify-content: center; margin-bottom: 5px; }
+        .modern-sidebar:not(.show) .sidebar-item i { margin-right: 0 !important; font-size: 1.3rem; min-width: auto; }
+        .modern-sidebar:not(.show) .sidebar-brand { justify-content: center; width: 100%; margin-bottom: 25px; padding: 0; }
+        .modern-sidebar:not(.show) .sidebar-brand i { margin-right: 0 !important; font-size: 1.6rem !important; }
+        .modern-sidebar:not(.show) .sidebar-search { padding: 10px 0; justify-content: center; background: transparent; border: none; margin-bottom: 15px; }
+        .modern-sidebar:not(.show) .sidebar-search i { margin-right: 0 !important; font-size: 1.2rem; }
+        .modern-sidebar:not(.show) .sidebar-user { justify-content: center; border-top: none; padding-top: 10px; width: 100%; }
+        .modern-sidebar:not(.show) .sidebar-avatar { margin: 0; width: 38px; min-width: 38px; height: 38px; font-size: 0.85rem; }
         
-        /* Ẩn hoàn toàn chữ */
+        /* Ẩn chữ và khung nhập liệu khi thu gọn */
         .modern-sidebar:not(.show) .sidebar-text,
         .modern-sidebar:not(.show) .sidebar-user-info,
         .modern-sidebar:not(.show) .sidebar-section-title,
         .modern-sidebar:not(.show) .sidebar-search input { display: none !important; }
         
-        /* Nút Đăng xuất mini thu gọn */
-        .modern-sidebar:not(.show) .sidebar-mini-logout { display: flex !important; align-items: center; justify-content: center; width: 34px; height: 34px; font-size: 1rem; padding: 0;}
+        /* Nút Đăng xuất mini (Hiện khi thu gọn) */
+        .modern-sidebar:not(.show) .sidebar-mini-logout { display: flex !important; align-items: center; justify-content: center; width: 38px; height: 38px; font-size: 1.1rem; padding: 0; }
         .modern-sidebar:not(.show) .sidebar-mini-logout i { margin: 0 !important; }
         
-        /* Ẩn nút 3 gạch bên ngoài vì đã có menu cố định */
-        #dashboard > button.btn-white, #teacher-dashboard > button.btn-white { display: none !important; }
+        /* ẨN TUYỆT ĐỐI NÚT MENU VUÔNG MÀU TRẮNG BÊN NGOÀI TRÊN PC */
+        .mobile-menu-btn { display: none !important; }
     }
-    
-    /* MÀN HÌNH ĐIỆN THOẠI: GIỮ NGUYÊN KIỂU TRƯỢT VÀO VÀ MÀNG ĐEN */
+
+    /* ĐIỀU CHỈNH NÚT MENU TRẮNG NHỎ LẠI CHO ĐIỆN THOẠI */
     @media (max-width: 991px) {
-        .modern-sidebar { border-radius: 0 24px 24px 0; }
-        .btn-close-sidebar { display: flex !important; }
+        .mobile-menu-btn { display: flex !important; width: 38px !important; height: 38px !important; border-radius: 8px !important; top: 15px !important; left: 15px !important; }
+        .mobile-menu-btn i { font-size: 1.4rem !important; }
     }
     /* CSS CỐT LÕI (GIỮ NGUYÊN BẢN GỐC CỦA THẦY) */
     .swal2-container { z-index: 99999 !important; }
@@ -487,8 +479,8 @@
  <!-- MÀN HÌNH HỌC SINH -->
 <div id="dashboard" style="display: none; position: relative; z-index: 10; min-height: 100vh;">
   <!-- NÚT MỞ SIDEBAR GÓC TRÊN BÊN TRÁI (HỌC SINH) -->
-    <button class="btn btn-white shadow-sm d-flex align-items-center justify-content-center" 
-            style="position: fixed; top: 20px; left: 20px; width: 44px; height: 44px; border-radius: 10px; z-index: 1040; border: 1px solid #e2e8f0; background: #ffffff; cursor: pointer; transition: all 0.2s;" 
+    <button class="btn btn-white shadow-sm d-flex align-items-center justify-content-center mobile-menu-btn"
+  style="position: fixed; top: 20px; left: 20px; width: 44px; height: 44px; border-radius: 10px; z-index: 1040; border: 1px solid #e2e8f0; background: #ffffff; cursor: pointer; transition: all 0.2s;" 
             onclick="toggleStudentSidebar()" 
             onmouseover="this.style.background='#f8f9fa'" 
             onmouseout="this.style.background='#ffffff'"
@@ -598,7 +590,7 @@
  <!-- MÀN HÌNH GIÁO VIÊN -->
 <div id="teacher-dashboard" style="display: none; position: relative; z-index: 10; min-height: 100vh;">   
   <!-- NÚT MỞ SIDEBAR GÓC TRÊN BÊN TRÁI -->
-    <button class="btn btn-white shadow-sm d-flex align-items-center justify-content-center" 
+    <button class="btn btn-white shadow-sm d-flex align-items-center justify-content-center mobile-menu-btn" 
             style="position: fixed; top: 20px; left: 20px; width: 44px; height: 44px; border-radius: 10px; z-index: 1040; border: 1px solid #e2e8f0; background: #ffffff; cursor: pointer; transition: all 0.2s;" 
             onclick="toggleTeacherSidebar()" 
             onmouseover="this.style.background='#f8f9fa'" 
@@ -4329,13 +4321,17 @@ window.previewTeacherExam = function(examId, durationMins) {
     </div>
 
     <div class="sidebar-footer">
+        <button class="btn btn-outline-danger fw-bold rounded-pill w-100 mb-2 shadow-sm py-2 sidebar-text" onclick="logout()"><i class="bi bi-box-arrow-right me-1"></i> ĐĂNG XUẤT</button>
         <!-- Nút logout mini (chỉ hiện khi thu nhỏ) -->
-        <button class="btn btn-outline-danger rounded-circle mx-auto mb-2 shadow-sm sidebar-mini-logout" style="width: 42px; height: 42px; display: none;" onclick="logout()" title="Đăng Xuất"><i class="bi bi-box-arrow-right m-0"></i></button>
+        <button class="btn btn-outline-danger rounded-circle mx-auto mb-2 shadow-sm sidebar-mini-logout" style="width: 42px; height: 42px; display: none;" onclick="logout()" title="Đăng Xuất"><i class="bi bi-box-arrow-right m-0 fs-5"></i></button>
+        
         <div class="sidebar-user">
-            <div class="sidebar-avatar">DNK</div>
+            <!-- Đã đổi màu Avatar sang đỏ/xanh chuẩn Giáo viên -->
+            <div class="sidebar-avatar bg-danger text-white">DNK</div>
             <div class="sidebar-user-info ms-2">
+                <!-- Đã gỡ bỏ id="sidebar-student-name" để không bị nhiễm script học sinh -->
                 <div class="fw-bold text-dark small text-truncate">Dương Nguyên Khoa</div>
-                <div class="text-muted" style="font-size: 0.7rem;">Giáo viên quản trị</div>
+                <div class="text-muted fw-bold" style="font-size: 0.75rem;">Giáo viên quản trị</div>
             </div>
         </div>
     </div>
