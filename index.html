@@ -443,80 +443,31 @@
     </div>
   </div>
 
-  <!-- MÀN HÌNH HỌC SINH -->
-  <div id="dashboard" style="display: none; position: relative; z-index: 10;">
+ <!-- MÀN HÌNH HỌC SINH -->
+  <div id="dashboard" style="display: none; position: relative; z-index: 10; background-color: #f8f9fc; min-height: 100vh;">
     <!-- NÚT MỞ SIDEBAR GÓC TRÊN BÊN TRÁI (HỌC SINH) -->
-<button class="btn btn-white shadow-sm d-flex align-items-center justify-content-center" 
-        style="position: fixed; top: 20px; left: 20px; width: 44px; height: 44px; border-radius: 10px; z-index: 1040; border: 1px solid #e2e8f0; background: #ffffff; cursor: pointer; transition: all 0.2s;" 
-        onclick="toggleStudentSidebar()" 
-        onmouseover="this.style.background='#f8f9fa'" 
-        onmouseout="this.style.background='#ffffff'"
-        title="Mở Menu Cá Nhân">
-    <i class="bi bi-list" style="font-size: 1.6rem; color: #475569;"></i>
-</button>
-    <!-- LỜI CHÀO PHONG CÁCH MỚI (Thay cho Hero Banner nặng nề) -->
-    <div class="container-fluid px-4" style="max-width: 1400px;">
-        <div class="modern-greeting d-flex justify-content-between align-items-end flex-wrap gap-3">
-            <div>
-                <h2>Chào thầy, Dương Nguyên Khoa 👋</h2>
-                <p id="current-date-display">Hôm nay là một ngày tuyệt vời để giảng dạy!</p>
-            </div>
-            <!-- Giữ lại các công tắc chức năng ở góc phải -->
-            <div class="d-flex flex-wrap align-items-center gap-3">
-                <div class="d-flex align-items-center gap-2 bg-white border rounded-pill px-3 shadow-sm" style="height: 42px; border-color: #e2e8f0 !important;">
-                  <span class="text-danger fw-bold small"><i class="bi bi-sun-fill"></i> Khóa hệ thống</span>
-                  <div class="form-check form-switch m-0 fs-5 d-flex align-items-center"><input class="form-check-input shadow-none m-0 border-danger" type="checkbox" id="systemLockSwitch" style="cursor:pointer" onchange="handleSystemLock(this.checked)"></div>
-                  <span id="lockStatusText" class="small fw-bold text-muted" style="min-width: 80px;">Đang mở 🟢</span>
-                </div>
-                <div class="d-flex align-items-center gap-2 bg-white border rounded-pill px-3 shadow-sm" style="height: 42px; border-color: #e2e8f0 !important;">
-                  <span class="text-dark fw-bold small"><i class="bi bi-power text-warning"></i> Kỳ thi ĐGNL</span>
-                  <div class="form-check form-switch m-0 fs-5 d-flex align-items-center"><input class="form-check-input shadow-none m-0 border-warning" type="checkbox" id="quickExamToggle" style="cursor:pointer" onchange="handleQuickExamToggle(this.checked)"></div>
-                  <span id="quickExamStatusText" class="small fw-bold text-muted" style="min-width: 90px;">Đang tải...</span>
-                </div>
-            </div>
-        </div>
+    <button class="btn btn-white shadow-sm d-flex align-items-center justify-content-center" 
+            style="position: fixed; top: 20px; left: 20px; width: 44px; height: 44px; border-radius: 10px; z-index: 1040; border: 1px solid #e2e8f0; background: #ffffff; cursor: pointer; transition: all 0.2s;" 
+            onclick="toggleStudentSidebar()" 
+            onmouseover="this.style.background='#f8f9fa'" 
+            onmouseout="this.style.background='#ffffff'"
+            title="Mở Menu Cá Nhân">
+        <i class="bi bi-list" style="font-size: 1.6rem; color: #475569;"></i>
+    </button>
 
-        <!-- THỐNG KÊ PHONG CÁCH "SỔ GIA SƯ" -->
-        <div class="row mb-4 g-3" id="teacher-stats" style="display: none;">
-            <div class="col-6 col-md-3">
-                <div class="saas-stat-card">
-                    <div class="saas-stat-header"><i class="bi bi-funnel text-secondary"></i> Tổng bài lọc</div>
-                    <div>
-                        <div class="saas-stat-number text-dark" id="stat-total">0</div>
-                        <div class="saas-stat-sub">Học sinh trong danh sách</div>
-                    </div>
-                </div>
+    <!-- LỜI CHÀO HỌC SINH (SAAS UI) -->
+    <div class="container-fluid px-3 px-md-4 pt-5 pb-2" style="max-width: 1300px;">
+        <div class="modern-greeting d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+            <div style="padding-left: 55px;"> <!-- Đã lùi lề để né nút menu -->
+                <h2 id="welcome-msg" class="fw-bold" style="color: #1e293b; font-size: 1.6rem;">Đang tải dữ liệu...</h2>
+                <p id="student-date-display" style="color: #64748b; font-weight: 500;">Chúc em một ngày học tập thật hiệu quả!</p>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="saas-stat-card">
-                    <div class="saas-stat-header"><i class="bi bi-check-circle text-success"></i> Đã chấm</div>
-                    <div>
-                        <div class="saas-stat-number text-success" id="stat-graded">0</div>
-                        <div class="saas-stat-sub">Hoàn thành chấm điểm</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="saas-stat-card">
-                    <div class="saas-stat-header"><i class="bi bi-hourglass-split text-warning"></i> Chưa chấm</div>
-                    <div>
-                        <div class="saas-stat-number text-warning" id="stat-ungraded">0</div>
-                        <div class="saas-stat-sub">Đang chờ xử lý</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="saas-stat-card">
-                    <div class="saas-stat-header"><i class="bi bi-star text-primary"></i> Điểm trung bình</div>
-                    <div>
-                        <div class="saas-stat-number text-primary" id="stat-avg">0.0</div>
-                        <div class="saas-stat-sub">Toàn bộ danh sách lọc</div>
-                    </div>
-                </div>
+            <div class="d-flex align-items-center gap-2 bg-white border rounded-pill px-3 py-2 shadow-sm" style="border-color: #e2e8f0 !important;">
+                <img src="https://drive.google.com/thumbnail?id=1tOtzf2nTmGiAFedtrEi3KGg98FIM8fbf&sz=w100" style="height: 24px; object-fit: contain;">
+                <span class="fw-bold text-primary small">Lớp Toán Anh Khoa</span>
             </div>
         </div>
-  
-    <div class="container" style="max-width: 1300px;">
+      
       <div id="web-notification-area" class="mb-4 mt-3"></div>
       <div class="d-flex flex-column flex-lg-row justify-content-between align-items-center align-items-lg-start mb-4 gap-3">
         <!-- Khung hiện bài kiểm tra ĐGNL của học sinh -->
@@ -539,25 +490,25 @@
         <!-- TAB 1: TRANG CHỦ / TỔNG QUAN -->
         <div class="tab-pane fade show active" id="tab-home" role="tabpanel">
           
-          <!-- Thống kê cá nhân -->
+          <!-- THỐNG KÊ HỌC SINH (SAAS UI) -->
           <div class="row mb-4 g-3">
             <div class="col-md-4">
-              <div class="p-3 bg-white border border-info border-2 rounded-4 shadow-sm text-center">
-                <h6 class="fw-bold text-muted mb-1">Điểm Trung Bình</h6>
-                <h2 class="fw-bold text-info mb-0" id="dash-avg-score">0.0</h2>
-              </div>
+                <div class="saas-stat-card">
+                    <div class="saas-stat-header"><i class="bi bi-star text-info"></i> Điểm Trung Bình</div>
+                    <div><div class="saas-stat-number text-info" id="dash-avg-score">0.0</div><div class="saas-stat-sub">Toàn bộ quá trình học</div></div>
+                </div>
             </div>
             <div class="col-md-4">
-              <div class="p-3 bg-white border border-success border-2 rounded-4 shadow-sm text-center">
-                <h6 class="fw-bold text-muted mb-1">Đã Hoàn Thành</h6>
-                <h2 class="fw-bold text-success mb-0" id="dash-submitted-count">0 <span class="fs-6 text-muted fw-normal">bài</span></h2>
-              </div>
+                <div class="saas-stat-card">
+                    <div class="saas-stat-header"><i class="bi bi-check-circle text-success"></i> Đã Hoàn Thành</div>
+                    <div><div class="saas-stat-number text-success" id="dash-submitted-count">0 <span class="fs-6 text-muted fw-normal">bài</span></div><div class="saas-stat-sub">Bài tập / Bài kiểm tra</div></div>
+                </div>
             </div>
             <div class="col-md-4">
-              <div class="p-3 bg-white border border-danger border-2 rounded-4 shadow-sm text-center">
-                <h6 class="fw-bold text-muted mb-1">Chưa Nộp / Trễ</h6>
-                <h2 class="fw-bold text-danger mb-0" id="dash-missing-count">0 <span class="fs-6 text-muted fw-normal">bài</span></h2>
-              </div>
+                <div class="saas-stat-card">
+                    <div class="saas-stat-header"><i class="bi bi-hourglass-split text-danger"></i> Chưa Nộp / Trễ</div>
+                    <div><div class="saas-stat-number text-danger" id="dash-missing-count">0 <span class="fs-6 text-muted fw-normal">bài</span></div><div class="saas-stat-sub">Cần hoàn thành sớm</div></div>
+                </div>
             </div>
           </div>
 
@@ -590,7 +541,7 @@
               <div id="lesson-list" class="row g-4"></div>
           </div>
 
-          <!-- PHỤC HỒI KHO TÀI LIỆU VÀ CÁC THẺ ĐÓNG BỊ MẤT -->
+          <!-- KHO TÀI LIỆU -->
           <div class="bg-white p-4 rounded-4 shadow-sm border mb-5">
               <div class="border-bottom border-success border-3 pb-2 mb-4 d-flex align-items-center">
                   <h4 class="text-success fw-bold m-0"><i class="bi bi-journal-bookmark-fill me-2"></i>Tài Liệu Tham Khảo</h4>
@@ -601,43 +552,53 @@
 
       </div> <!-- Đóng tab-content -->
     </div> <!-- Đóng container -->
-  </div> <!-- Đóng dashboard (Nút thắt gây ra lỗi màn hình trắng) -->
+  </div> <!-- Đóng dashboard -->
 
-  <!-- MÀN HÌNH GIÁO VIÊN -->
-
-  <!-- MÀN HÌNH GIÁO VIÊN -->
-  <div id="teacher-dashboard" style="display: none;">
+ <!-- MÀN HÌNH GIÁO VIÊN -->
+  <div id="teacher-dashboard" style="display: none; background-color: #f8f9fc; min-height: 100vh;">
     <!-- NÚT MỞ SIDEBAR GÓC TRÊN BÊN TRÁI -->
-<button class="btn btn-white shadow-sm d-flex align-items-center justify-content-center" 
-        style="position: fixed; top: 20px; left: 20px; width: 44px; height: 44px; border-radius: 10px; z-index: 1040; border: 1px solid #e2e8f0; background: #ffffff; cursor: pointer; transition: all 0.2s;" 
-        onclick="toggleTeacherSidebar()" 
-        onmouseover="this.style.background='#f8f9fa'" 
-        onmouseout="this.style.background='#ffffff'"
-        title="Mở Menu Quản trị">
-    <i class="bi bi-list" style="font-size: 1.6rem; color: #475569;"></i>
-</button>
+    <button class="btn btn-white shadow-sm d-flex align-items-center justify-content-center" 
+            style="position: fixed; top: 20px; left: 20px; width: 44px; height: 44px; border-radius: 10px; z-index: 1040; border: 1px solid #e2e8f0; background: #ffffff; cursor: pointer; transition: all 0.2s;" 
+            onclick="toggleTeacherSidebar()" 
+            onmouseover="this.style.background='#f8f9fa'" 
+            onmouseout="this.style.background='#ffffff'"
+            title="Mở Menu Quản trị">
+        <i class="bi bi-list" style="font-size: 1.6rem; color: #475569;"></i>
+    </button>
 
-    <div class="hero-banner text-center position-relative" style="padding-top: 45px; padding-bottom: 35px;">
-      <img src="https://drive.google.com/thumbnail?id=1tOtzf2nTmGiAFedtrEi3KGg98FIM8fbf&sz=w1000" class="logo-hcmue-teacher" alt="Logo HCMUE" style="transform: translateX(40px);">
-      <h1 class="mb-2 fw-bold" style="font-size: 2.8rem; letter-spacing: 1px;"><i class="bi bi-mortarboard-fill me-2"></i> HỆ THỐNG QUẢN TRỊ</h1>
-      <h4 class="fw-light mb-0">Khu vực dành riêng cho Giáo viên</h4>
-      <div class="header-teacher-name"><i class="bi bi-vector-pen"></i> Giáo viên: Dương Nguyên Khoa</div>
-    </div>
-    
-    <div class="container-fluid px-4" style="max-width: 1400px;">
-      <div class="mb-4 bg-white p-4 rounded-4 shadow-sm border border-primary border-opacity-10">
-        <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom border-primary border-opacity-10 pb-3 mb-3">
-          <h3 class="text-primary fw-bold mb-0"><i class="bi bi-mortarboard-fill me-2"></i>Quản lý lớp học</h3>
-          <div class="d-flex flex-wrap align-items-center gap-3 mt-3 mt-md-0">
-
-            <!-- Công tắc Khóa hệ thống -->
-            <div class="d-flex align-items-center gap-2 bg-light border border-danger rounded-pill px-3 shadow-sm" style="height: 42px;">
-              <span class="text-danger fw-bold small"><i class="bi bi-sun-fill"></i> Khóa hệ thống</span>
-              <div class="form-check form-switch m-0 fs-5 d-flex align-items-center"><input class="form-check-input shadow-none m-0 border-danger" type="checkbox" id="systemLockSwitch" style="cursor:pointer" onchange="handleSystemLock(this.checked)"></div>
-              <span id="lockStatusText" class="small fw-bold text-muted" style="min-width: 80px;">Đang mở 🟢</span>
+    <!-- LỜI CHÀO GIÁO VIÊN (SAAS UI) -->
+    <div class="container-fluid px-4 pt-5 pb-2" style="max-width: 1400px;">
+        <div class="modern-greeting d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+            <div style="padding-left: 55px;"> <!-- Né nút menu -->
+                <h2 class="fw-bold" style="color: #1e293b; font-size: 1.8rem;">Chào thầy, Dương Nguyên Khoa 👋</h2>
+                <p id="teacher-date-display" style="color: #64748b; font-weight: 500;">Hôm nay là một ngày tuyệt vời để giảng dạy!</p>
             </div>
-            <button class="btn btn-outline-danger fw-bold rounded-pill shadow-sm bg-white px-3" style="height: 42px;" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Thoát</button>
-          </div>
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2 bg-white border rounded-pill px-3 shadow-sm" style="height: 42px; border-color: #e2e8f0 !important;">
+                  <span class="text-danger fw-bold small"><i class="bi bi-sun-fill"></i> Khóa hệ thống</span>
+                  <div class="form-check form-switch m-0 fs-5 d-flex align-items-center"><input class="form-check-input shadow-none m-0 border-danger" type="checkbox" id="systemLockSwitch" style="cursor:pointer" onchange="handleSystemLock(this.checked)"></div>
+                  <span id="lockStatusText" class="small fw-bold text-muted" style="min-width: 80px;">Đang mở 🟢</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 bg-white border rounded-pill px-3 shadow-sm" style="height: 42px; border-color: #e2e8f0 !important;">
+                  <span class="text-dark fw-bold small"><i class="bi bi-power text-warning"></i> Kỳ thi ĐGNL</span>
+                  <div class="form-check form-switch m-0 fs-5 d-flex align-items-center"><input class="form-check-input shadow-none m-0 border-warning" type="checkbox" id="quickExamToggle" style="cursor:pointer" onchange="handleQuickExamToggle(this.checked)"></div>
+                  <span id="quickExamStatusText" class="small fw-bold text-muted" style="min-width: 90px;">Đang tải...</span>
+                </div>
+                <button class="btn btn-outline-danger fw-bold rounded-pill shadow-sm bg-white px-3" style="height: 42px;" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Thoát</button>
+            </div>
+        </div>
+
+        <!-- THỐNG KÊ GIÁO VIÊN (SAAS UI) -->
+        <div class="row mb-4 g-3" id="teacher-stats" style="display: none;">
+            <div class="col-6 col-md-3"><div class="saas-stat-card"><div class="saas-stat-header"><i class="bi bi-funnel text-secondary"></i> Tổng bài lọc</div><div><div class="saas-stat-number text-dark" id="stat-total">0</div><div class="saas-stat-sub">Học sinh trong danh sách</div></div></div></div>
+            <div class="col-6 col-md-3"><div class="saas-stat-card"><div class="saas-stat-header"><i class="bi bi-check-circle text-success"></i> Đã chấm</div><div><div class="saas-stat-number text-success" id="stat-graded">0</div><div class="saas-stat-sub">Hoàn thành chấm điểm</div></div></div></div>
+            <div class="col-6 col-md-3"><div class="saas-stat-card"><div class="saas-stat-header"><i class="bi bi-hourglass-split text-warning"></i> Chưa chấm</div><div><div class="saas-stat-number text-warning" id="stat-ungraded">0</div><div class="saas-stat-sub">Đang chờ xử lý</div></div></div></div>
+            <div class="col-6 col-md-3"><div class="saas-stat-card"><div class="saas-stat-header"><i class="bi bi-star text-primary"></i> Điểm trung bình</div><div><div class="saas-stat-number text-primary" id="stat-avg">0.0</div><div class="saas-stat-sub">Toàn bộ danh sách lọc</div></div></div></div>
+        </div>
+
+      <div class="mb-4 bg-white p-4 rounded-4 shadow-sm border border-primary border-opacity-10">
+        <div class="d-flex flex-wrap justify-content-between align-items-center pb-2">
+          <h3 class="text-primary fw-bold mb-0"><i class="bi bi-mortarboard-fill me-2"></i>Quản lý lớp học</h3>
         </div>
       </div>
 
