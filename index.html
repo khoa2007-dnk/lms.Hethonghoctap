@@ -1545,7 +1545,7 @@ function openAssignModal() {
                 <div class="form-check student-item mb-2 opacity-50" data-grade="${s.grade}" style="background-color: #e9ecef; border-radius: 5px; padding: 5px 5px 5px 30px;">
                     <input class="form-check-input student-cb mt-0" type="checkbox" value="${s.id}" disabled>
                     <label class="form-check-label fw-bold text-muted ms-2 mt-1" style="text-decoration: line-through;">
-                        ${s.name} (${s.id}) <span class="badge bg-secondary ms-1 small">Đang nghỉ hè</span>
+                        ${s.name} (${s.id}) <span class="badge bg-secondary ms-1 small">${s.lockReason || 'Tạm khóa'}</span>
                     </label>
                 </div>`;
             } else {
@@ -1628,7 +1628,7 @@ function openEditLesson(index) {
                 <div class="form-check student-item mb-2 opacity-50" data-grade="${s.grade}" style="background-color: #e9ecef; border-radius: 5px; padding: 5px 5px 5px 30px;">
                     <input class="form-check-input student-cb mt-0" type="checkbox" value="${s.id}" disabled>
                     <label class="form-check-label fw-bold text-muted ms-2 mt-1" style="text-decoration: line-through;">
-                        ${s.name} (${s.id}) <span class="badge bg-secondary ms-1 small">Đang nghỉ hè</span>
+                        ${s.name} (${s.id}) <span class="badge bg-secondary ms-1 small">${s.lockReason || 'Tạm khóa'}</span>
                     </label>
                 </div>`;
             } else {
@@ -2605,21 +2605,32 @@ function handleSystemLock(isLocked) {
         });
         html += '</div>';
 
+        // THÊM KHUNG NHẬP LÝ DO KHÓA
+        html += `
+        <div class="mt-4 text-start">
+            <label class="fw-bold text-dark mb-2"><i class="bi bi-pencil-square text-danger me-1"></i> Lý do khóa (hiển thị cho học sinh):</label>
+            <input type="text" id="lock-reason-input" class="form-control border-danger shadow-sm fw-bold" placeholder="VD: Tạm khóa để bảo trì, Nghỉ lễ, Vi phạm nội quy..." value="Tạm khóa hệ thống">
+        </div>`;
+
         Swal.fire({
-            title: 'Khóa theo Khối/Lớp', html: html, icon: 'warning', showCancelButton: true, confirmButtonText: '<i class="bi bi-lock-fill"></i> Khóa Lớp Học', cancelButtonText: 'Hủy', confirmButtonColor: '#dc3545'
+            title: 'Khóa theo Khối/Lớp', html: html, icon: 'warning', showCancelButton: true, confirmButtonText: '<i class="bi bi-lock-fill"></i> Xác nhận Khóa', cancelButtonText: 'Hủy', confirmButtonColor: '#dc3545'
         }).then((result) => {
             if (result.isConfirmed) {
                 let selected = Array.from(document.querySelectorAll('.class-lock-cb:checked')).map(cb => cb.value);
+                // Lấy nội dung lý do giáo viên vừa nhập
+                let reason = document.getElementById('lock-reason-input').value.trim() || "Tạm khóa hệ thống";
+
                 document.getElementById('lockStatusText').innerText = '⏳ Đang lưu...';
                 document.getElementById('systemLockSwitch').disabled = true;
+                
                 callAPI.then(function() {
                     document.getElementById('systemLockSwitch').disabled = false;
                     document.getElementById('systemLockSwitch').checked = true; 
-                    let text = selected.length > 0 ? `Đã khóa: ${selected.join(', ')}` : "ĐÃ KHÓA TẤT CẢ LỚP 🔒";
+                    let text = selected.length > 0 ? \`Đã khóa: \${selected.join(', ')}\` : "ĐÃ KHÓA TẤT CẢ LỚP 🔒";
                     document.getElementById('lockStatusText').innerText = text;
                     document.getElementById('lockStatusText').style.color = "#dc3545";
                     Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã lưu thiết lập khóa!', showConfirmButton: false, timer: 2000});
-                }).toggleSystemLock(true, selected);
+                }).toggleSystemLock(true, selected, reason); // <--- ĐÃ TRUYỀN THÊM BIẾN REASON VÀO API
             }
         });
     }).getUniqueClasses();
@@ -4070,7 +4081,7 @@ window.toggleTargetIds = function() {
                 // XỬ LÝ LỖI "KHỐI NULL": Đổi thành chữ "Khác" nếu không có khối
                 let gradeText = (s.grade && s.grade !== "null") ? `Khối ${s.grade}` : `Khác`;
                 let badgeStr = s.isDisabled 
-                    ? `<span class="badge bg-secondary ms-1 shadow-sm" style="font-size: 0.65rem;">Nghỉ hè</span>` 
+                    ? `<span class="badge bg-secondary ms-1 shadow-sm" style="font-size: 0.65rem;"><i class="bi bi-lock-fill"></i> ${s.lockReason || 'Tạm khóa'}</span>` 
                     : `<span class="badge bg-light text-dark border border-secondary shadow-sm ms-1" style="font-size: 0.65rem;">${gradeText}</span>`;
                 
                 // XỬ LÝ LỖI GIAO DIỆN XẤU: Dùng d-flex align-items-center ép thẳng hàng
