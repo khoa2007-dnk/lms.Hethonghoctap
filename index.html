@@ -2584,25 +2584,30 @@ function handleSystemLock(isLocked) {
     if (!isLocked) {
         document.getElementById('lockStatusText').innerText = '⏳ Đang lưu...';
         document.getElementById('systemLockSwitch').disabled = true;
-        callAPI.then(function() {
+        callAPI
+        .withFailureHandler(function(err) {
+            Swal.fire('Lỗi', err.message, 'error');
+            document.getElementById('systemLockSwitch').disabled = false;
+        })
+        .withSuccessHandler(function() {
             document.getElementById('systemLockSwitch').disabled = false;
             document.getElementById('lockStatusText').innerText = "Trạng thái: Đang mở 🟢";
             document.getElementById('lockStatusText').style.color = "gray";
             Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã mở khóa hệ thống!', showConfirmButton: false, timer: 2000});
-        }).toggleSystemLock(false, [], ""); // Gửi reason rỗng khi mở khóa
+        }).toggleSystemLock(false, [], ""); 
         return;
     }
     
     document.getElementById('systemLockSwitch').checked = false;
     Swal.fire({ title: 'Đang tải danh sách Khối/Lớp...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-    callAPI.then(function(classes) {
-        Swal.close(); // ĐÓNG BẢNG LOADING CŨ ĐỂ XÓA TRẠNG THÁI QUAY VÒNG VÒNG
+    callAPI
+    .withFailureHandler(function(err) { Swal.fire('Lỗi tải danh sách', err.message, 'error'); })
+    .withSuccessHandler(function(classes) {
+        Swal.close(); 
 
         setTimeout(() => {
-            // LỌC BỎ DỮ LIỆU RÁC: Xóa các khối "null" hoặc "undefined"
             let validClasses = classes.filter(c => c && c !== "null" && c !== "undefined");
-            
             let html = '<div class="text-start mb-3 text-danger fw-bold small">* Bỏ trống (không chọn) đồng nghĩa với việc KHÓA TẤT CẢ LỚP HỌC.</div><div class="d-flex flex-wrap gap-2 justify-content-center">';
             validClasses.forEach(c => {
                 html += `<div class="form-check border border-2 rounded-3 border-danger px-3 py-2 bg-white shadow-sm d-flex align-items-center gap-2" style="cursor: pointer;" onclick="let cb=document.getElementById('cb-${c}'); cb.checked=!cb.checked; this.classList.toggle('bg-light');">
@@ -2612,11 +2617,10 @@ function handleSystemLock(isLocked) {
             });
             html += '</div>';
 
-            // THÊM KHUNG NHẬP LÝ DO KHÓA
             html += `
             <div class="mt-4 text-start">
                 <label class="fw-bold text-dark mb-2"><i class="bi bi-pencil-square text-danger me-1"></i> Lý do khóa (hiển thị cho học sinh):</label>
-                <input type="text" id="lock-reason-input" class="form-control border-danger shadow-sm fw-bold" placeholder="VD: Tạm khóa để bảo trì, Nghỉ lễ, Vi phạm nội quy..." value="Tạm khóa hệ thống">
+                <input type="text" id="lock-reason-input" class="form-control border-danger shadow-sm fw-bold" placeholder="VD: Tạm khóa để bảo trì, Nghỉ lễ..." value="Tạm khóa hệ thống">
             </div>`;
 
             Swal.fire({
@@ -2624,7 +2628,6 @@ function handleSystemLock(isLocked) {
             }).then((result) => {
                 if (result.isConfirmed) {
                     let selected = Array.from(document.querySelectorAll('.class-lock-cb:checked')).map(cb => cb.value);
-                    // Lấy nội dung lý do giáo viên vừa nhập
                     let reason = document.getElementById('lock-reason-input') ? document.getElementById('lock-reason-input').value.trim() : "Tạm khóa hệ thống";
                     if (!reason) reason = "Tạm khóa hệ thống";
 
@@ -2633,7 +2636,12 @@ function handleSystemLock(isLocked) {
                     
                     Swal.fire({title: 'Đang lưu thiết lập...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
-                    callAPI.then(function() {
+                    callAPI
+                    .withFailureHandler(function(err) {
+                        Swal.fire('Lỗi', err.message, 'error');
+                        document.getElementById('systemLockSwitch').disabled = false;
+                    })
+                    .withSuccessHandler(function() {
                         document.getElementById('systemLockSwitch').disabled = false;
                         document.getElementById('systemLockSwitch').checked = true; 
                         let text = selected.length > 0 ? `Đã khóa: ${selected.join(', ')}` : "ĐÃ KHÓA TẤT CẢ LỚP 🔒";
@@ -2643,7 +2651,7 @@ function handleSystemLock(isLocked) {
                     }).toggleSystemLock(true, selected, reason); 
                 }
             });
-        }, 150); // Chờ 150 mili-giây cho bảng cũ tắt hẳn rồi mới bung bảng mới
+        }, 150); 
     }).getUniqueClasses();
 }
 
