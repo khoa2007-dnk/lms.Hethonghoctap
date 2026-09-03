@@ -2627,7 +2627,8 @@ function handleSystemLock(isLocked) {
                 callAPI.then(function() {
                     document.getElementById('systemLockSwitch').disabled = false;
                     document.getElementById('systemLockSwitch').checked = true; 
-                    let text = selected.length > 0 ? \`Đã khóa: \${selected.join(', ')}\` : "ĐÃ KHÓA TẤT CẢ LỚP 🔒";
+                    // ĐÃ XÓA LỖI CÚ PHÁP Ở DÒNG DƯỚI ĐÂY
+                    let text = selected.length > 0 ? `Đã khóa: ${selected.join(', ')}` : "ĐÃ KHÓA TẤT CẢ LỚP 🔒";
                     document.getElementById('lockStatusText').innerText = text;
                     document.getElementById('lockStatusText').style.color = "#dc3545";
                     Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã lưu thiết lập khóa!', showConfirmButton: false, timer: 2000});
