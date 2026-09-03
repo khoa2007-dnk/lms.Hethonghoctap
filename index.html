@@ -3812,7 +3812,7 @@ window.confirmSubmitDGNL = function(isAuto = false) {
 };
 
 // ===================================================================
-// BỘ NỘP BÀI TÍCH HỢP TÍN HIỆU CHỐT HẠ CHO RADAR GIÁM THỊ
+// BỘ NỘP BÀI TÍCH HỢP TÍN HIỆU CHỐT HẠ & XÓA NHÁP TRÌNH DUYỆT
 // ===================================================================
 
 window.executeSubmitDGNL = function(answersStr) {
@@ -3862,6 +3862,21 @@ window.executeSubmitDGNL = function(answersStr) {
             .then(function(res) {
                 Swal.close();
                 if (res && res.success) {
+                    
+                    // ==============================================================
+                    // BƯỚC SIẾT CHẶT: XÉ NHÁP SAU KHI NỘP THÀNH CÔNG
+                    // Đảm bảo nếu Thầy cho "Làm lại", học sinh sẽ bắt đầu từ con số 0
+                    // ==============================================================
+                    localStorage.removeItem('dgnl_backup_' + safeExamId); // Xóa nháp trên trình duyệt
+                    
+                    try { 
+                        // Dọn luôn bản nháp trên Radar máy chủ (nếu có)
+                        if (typeof callAPI.removeExamRadarDraft === 'function') {
+                            callAPI.removeExamRadarDraft(safeExamId, safeId); 
+                        }
+                    } catch(e){}
+                    // ==============================================================
+
                     Swal.fire({
                         title: '<h4 class="text-success fw-bold">NỘP BÀI THÀNH CÔNG!</h4>', 
                         text: 'Kết quả của em đã được lưu vào hệ thống.', 
