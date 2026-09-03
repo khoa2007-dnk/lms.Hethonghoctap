@@ -165,7 +165,9 @@
         
         /* Đẩy nội dung trang sang phải để né Menu */
         #dashboard, #teacher-dashboard { padding-left: 80px; padding-right: 35px; transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; width: 100%; overflow-x: hidden; }
-        
+        /* ---> THÊM LỆNH ĐẨY TRANG KHI MENU MỞ <--- */
+        #dashboard.dashboard-shifted, #teacher-dashboard.dashboard-shifted { padding-left: 260px !important; }
+      
         /* HIỆU ỨNG THU GỌN (Chỉ hiện Icon, Căn giữa hoàn hảo) */
         .modern-sidebar:not(.show) .sidebar-item { padding: 12px 0; justify-content: center; margin-bottom: 5px; }
         .modern-sidebar:not(.show) .sidebar-item i { margin-right: 0 !important; font-size: 1.3rem; min-width: auto; }
@@ -4386,18 +4388,24 @@ window.previewTeacherExam = function(examId, durationMins) {
 function toggleTeacherSidebar() {
     let sidebar = document.getElementById('teacherModernSidebar');
     let overlay = document.getElementById('sidebarOverlay');
+    let dashboard = document.getElementById('teacher-dashboard');
     if (sidebar && overlay) {
         sidebar.classList.toggle('show');
         overlay.classList.toggle('show');
+        // Lệnh đẩy trang web sang phải
+        if (dashboard) dashboard.classList.toggle('dashboard-shifted');
     }
 }
 // ================= HÀM MỞ SIDEBAR HỌC SINH =================
 function toggleStudentSidebar() {
     let sidebar = document.getElementById('studentModernSidebar');
     let overlay = document.getElementById('studentSidebarOverlay');
+    let dashboard = document.getElementById('dashboard');
     if (sidebar && overlay) {
         sidebar.classList.toggle('show');
         overlay.classList.toggle('show');
+        // Lệnh đẩy trang web sang phải
+        if (dashboard) dashboard.classList.toggle('dashboard-shifted');
         
         // Tự động quét và điền Tên + Mã học sinh vào Menu
         let nameEl = document.getElementById('sidebar-student-name');
@@ -4412,7 +4420,6 @@ function toggleStudentSidebar() {
         if (idEl) idEl.innerText = "Mã số: " + safeId;
     }
 }
-</script>
 </script>
 <script>
 // ===================================================================
