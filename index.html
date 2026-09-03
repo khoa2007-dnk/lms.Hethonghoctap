@@ -1128,27 +1128,16 @@
                   <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="stopRadar()"></button>
               </div>
               <div class="modal-body p-4 bg-light">
-          <p id="modal-lesson-name" class="fw-bold text-primary fs-5 text-center mb-4"></p>
-          
-          <!-- PREMIUM UPLOAD AREA -->
-          <div class="premium-drop mb-3" id="premium-upload-area">
-              <i class="bi bi-cloud-arrow-up-fill premium-drop-icon"></i>
-              <div class="premium-drop-title">Nhấn hoặc Kéo thả ảnh vào đây</div>
-              <div class="premium-drop-sub">Hỗ trợ JPG, PNG (Tối đa 5MB)</div>
-              <!-- File input gắn hàm xử lý hiện ảnh -->
-              <input type="file" class="premium-file-input" id="fileInput" multiple accept="image/*" onchange="handlePremiumUpload(this)">
-          </div>
-          
-          <!-- HIỂN THỊ THUMBNAIL TỆP & NÚT XÓA -->
-          <div id="file-name-display" class="d-flex flex-wrap gap-2 justify-content-center mb-3"></div>
-          <div class="text-center mb-2">
-              <button type="button" class="btn btn-sm btn-outline-danger rounded-pill fw-bold d-none shadow-sm" id="btn-clear-upload" onclick="clearPremiumUpload()">
-                  <i class="bi bi-x-circle-fill"></i> Hủy chọn tệp (Chọn lại)
-              </button>
-          </div>
-          
-          <div id="upload-status" class="text-center fw-bold text-primary mt-2"></div>
-        </div>
+                  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-4 shadow-sm border">
+                      <div class="d-flex gap-3">
+                          <span class="badge bg-secondary px-3 py-2 shadow-sm"><i class="bi bi-square-fill me-1"></i>Chưa làm</span> 
+                          <span class="badge bg-success px-3 py-2 shadow-sm"><i class="bi bi-square-fill me-1"></i>Đã chọn ĐA</span>
+                          <span class="badge bg-danger px-3 py-2 shadow-sm"><i class="bi bi-exclamation-triangle-fill me-1"></i>Mất kết nối (>3p)</span>
+                      </div>
+                      <div class="fw-bold text-muted bg-light px-3 py-2 rounded-pill border"><i class="bi bi-arrow-repeat me-1"></i> Nhịp đồng bộ: <span id="radar-last-sync" class="text-primary">Đang quét...</span></div>
+                  </div>
+                  <div id="radar-container" class="row g-3"></div>
+              </div>
           </div>
       </div>
   </div>
@@ -2454,28 +2443,29 @@ function checkDGNLStatus() {
     if (document.getElementById('dashboard') && document.getElementById('dashboard').style.display === 'none') return;
     let session = JSON.parse(localStorage.getItem('lms_session') || '{}');
     let safeId = window.currentStudentId || session.id || "HS_TEST";
-
     let container = document.getElementById('student-exams-container');
     if (!container) return;
 
     callAPI.then(function(exams) {
         if (!exams || exams.length === 0) {
-            container.innerHTML = `<div class="text-center text-muted small fw-bold mb-4" style="opacity: 0.6;">
-              <i class="bi bi-shield-check me-1 fs-6"></i> Hiện tại không có kỳ thi nào đang diễn ra.
-          </div>`;
+            container.innerHTML = `<div class="text-center text-muted small fw-bold mb-4" style="opacity: 0.6;"><i class="bi bi-shield-check me-1 fs-6"></i> Hiện tại không có kỳ thi nào đang diễn ra.</div>`;
             delete container.dataset.examHash; 
             return;
         }
-        let currentHash = exams.map(e => e.id + ":" + e.isSubmitted + ":" + e.score).join("|");
+        
+        // 1. Thêm trạng thái (status) vào thuật toán để hệ thống nhạy bén với thay đổi
+        let currentHash = exams.map(e => e.id + ":" + e.isSubmitted + ":" + e.status + ":" + e.score).join("|");
         if (container.dataset.examHash === currentHash) return; 
 
         let newHtml = '';
+        // 2. Nhận diện xem học sinh có đang mở bảng Tracking không
+        let isTrackingOpen = Swal.isVisible() && document.querySelector('.tracking-title');
+
         exams.forEach(ex => {
             let borderColor = '#dc3545'; let iconBg = '#dc3545'; let titleColor = '#dc3545';
             let statusHtml = ''; let btnHtml = '';
 
             if (ex.isSubmitted) {
-                // Tăng cường bộ nhận diện trạng thái từ Google Sheet
                 let isPublished = (ex.status === "Đã trả điểm" || ex.status === "Đã công bố" || ex.status === "PUBLISHED" || ex.status === "COMPLETED" || ex.isPublished === true);
                 let isGraded = (ex.status === "Đã chấm" || ex.status === "GRADED" || (ex.score !== "" && ex.score !== undefined && ex.score !== null));
 
@@ -2483,12 +2473,40 @@ function checkDGNLStatus() {
                     statusHtml = `<div class="mt-2 text-center"><span class="badge bg-success shadow-sm px-3 py-2 rounded-pill"><i class="bi bi-trophy-fill text-warning"></i> ĐIỂM SỐ: ${ex.score}</span></div>`;
                     btnHtml = `<button class="btn btn-warning text-dark w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" onclick="openExamReviewMulti('${ex.id}')"><i class="bi bi-eye-fill me-1"></i> XEM LẠI BÀI LÀM</button>`;
                     borderColor = '#198754'; iconBg = '#198754'; titleColor = '#198754';
+                    
+                    // NẾU GIÁO VIÊN BẤM TRẢ ĐIỂM -> ĐÓNG BẢNG TRACKING NGAY LẬP TỨC VÀ BÁO HỶ
+                    if (isTrackingOpen) {
+                        let footText = document.querySelector('.tf-text');
+                        if (footText && footText.innerText.includes(ex.examTitle.toUpperCase())) {
+                            Swal.close();
+                            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: '🔔 Đã có điểm môn ' + ex.examTitle, showConfirmButton: false, timer: 5000});
+                        }
+                    }
                 } else {
-                    // Trạng thái chờ: Nhận diện đã Tự động chấm hay chưa
                     let waitText = isGraded ? "Đã chấm xong, chờ công bố" : "Đang chờ chấm...";
                     statusHtml = `<div class="mt-2 text-center"><span class="badge bg-secondary shadow-sm px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split"></i> ${waitText}</span></div>`;
                     btnHtml = `<button class="btn text-white w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" style="background: linear-gradient(135deg, #885CF6 0%, #c4b5fd 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="openExamTrackingModal('${ex.examTitle}', ${isGraded})"><i class="bi bi-radar me-1"></i> XEM TIẾN TRÌNH</button>`;
                     borderColor = '#6c757d'; iconBg = '#6c757d'; titleColor = '#6c757d';
+                    
+                    // NẾU GIÁO VIÊN BẤM TỰ ĐỘNG CHẤM -> BẬT XANH GIAI ĐOẠN 3 NGAY TRÊN BẢNG TRACKING (KHÔNG CẦN F5)
+                    if (isTrackingOpen && isGraded) {
+                        let footText = document.querySelector('.tf-text');
+                        if (footText && footText.innerText.includes(ex.examTitle.toUpperCase())) {
+                            let items = document.querySelectorAll('.timeline-item');
+                            if (items.length >= 4) {
+                                items[2].className = "timeline-item done";
+                                items[2].querySelector('.timeline-icon').innerHTML = '<i class="bi bi-check-lg"></i>';
+                                items[2].querySelector('.timeline-status').className = "timeline-status status-done";
+                                items[2].querySelector('.timeline-status').innerText = "Done";
+                                items[2].querySelector('p').innerText = "Hoàn tất phân tích kết quả";
+                                
+                                items[3].className = "timeline-item active";
+                                items[3].querySelector('.timeline-status').className = "timeline-status status-active";
+                                items[3].querySelector('.timeline-status').innerText = "Live";
+                                items[3].querySelector('p').innerText = "Hệ thống chuẩn bị gửi Email & Điểm";
+                            }
+                        }
+                    }
                 }
             } else {
                 statusHtml = `<div class="mt-2 text-center"><span class="badge bg-success shadow-sm px-3 py-2 rounded-pill animate__animated animate__pulse animate__infinite">🟢 ĐANG MỞ - VÀO THI</span></div>`;
