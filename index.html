@@ -121,47 +121,73 @@
     .tf-progress { width: 65%; background: linear-gradient(90deg, #885CF6, #c4b5fd); height: 100%; border-radius: 10px; animation: trackSlide 2.5s ease-in-out infinite alternate; }
     @keyframes trackSlide { 0% { width: 40%; } 100% { width: 85%; } }
     @keyframes trackPulse { 0% { transform: scale(0.8); opacity: 0.8; } 100% { transform: scale(1.8); opacity: 0; } }
-/* --- GIAO DIỆN SIDEBAR SÁNG MÀU TƯƠI THIỆN --- */
-.modern-sidebar {
-    position: fixed; top: 0; left: -280px; width: 270px; height: 100vh;
-    background-color: #ffffff; /* Đổi nền sang Trắng */
-    color: #333333; 
-    z-index: 1055; 
-    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex; flex-direction: column; padding: 20px 15px;
-    box-shadow: 5px 0 25px rgba(0,0,0,0.08); /* Bóng đổ nhẹ nhàng hơn */
-    border-right: 1px solid #e9ecef; 
-    border-radius: 0 24px 24px 0; /* Bo tròn góc phải mềm mại */
-    font-family: inherit;
-}
-.modern-sidebar.show { left: 0; }
-.sidebar-overlay {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px);
-    z-index: 1050; display: none;
-}
-.sidebar-overlay.show { display: block; }
-.sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.sidebar-brand { font-weight: 800; color: #004494; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; } /* Xanh chủ đạo */
-.btn-close-sidebar { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #6c757d; font-size: 1rem; cursor: pointer; transition: 0.2s; }
-.btn-close-sidebar:hover { background: #dc3545; color: #fff; border-color: #dc3545; } /* Hover Đỏ */
-.sidebar-search { background: #f8f9fc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 4px 10px; margin-bottom: 20px; }
-.sidebar-search input { background: transparent; border: none; color: #333; font-size: 0.9rem; box-shadow: none !important; }
-.sidebar-search input::placeholder { color: #adb5bd; }
-.sidebar-section-title { font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; color: #004494; margin: 15px 0 8px 10px; font-weight: 800; opacity: 0.8; }
-.sidebar-menu { display: flex; flex-direction: column; gap: 4px; }
-.sidebar-item { 
-    display: flex; align-items: center; gap: 12px; padding: 12px 15px; 
-    border-radius: 12px; color: #495057; font-size: 0.95rem; font-weight: 600; 
-    transition: all 0.2s ease; cursor: pointer; border: none; background: transparent; 
-    width: 100%; text-align: left; 
-}
-.sidebar-item:hover { background: #f0f7ff; color: #0d6efd; transform: translateX(5px); } /* Hover trượt nhẹ, nền xanh nhạt */
-.sidebar-item i { font-size: 1.2rem; color: #6c757d; transition: 0.2s; }
-.sidebar-item:hover i { color: #0d6efd; }
-.sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
-.sidebar-user { display: flex; align-items: center; gap: 12px; padding-top: 15px; border-top: 2px dashed #e9ecef; }
-.sidebar-avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #004494 0%, #dc3545 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+/* =================================================================== */
+    /* MENU SIDEBAR THU GỌN / MỞ RỘNG KIỂU SAAS                            */
+    /* =================================================================== */
+    .modern-sidebar {
+        position: fixed; top: 0; left: -280px; width: 270px; height: 100vh;
+        background-color: #ffffff; color: #333333; z-index: 1055; 
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex; flex-direction: column; padding: 20px 15px;
+        box-shadow: 5px 0 25px rgba(0,0,0,0.08); border-right: 1px solid #e9ecef; 
+        font-family: inherit; overflow-x: hidden; white-space: nowrap;
+    }
+    .modern-sidebar.show { left: 0; }
+    .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(3px); z-index: 1050; display: none; }
+    .sidebar-overlay.show { display: block; }
+    .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .sidebar-brand { font-weight: 800; color: #004494; font-size: 1.2rem; display: flex; align-items: center; gap: 5px; }
+    .btn-close-sidebar { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #6c757d; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+    .btn-close-sidebar:hover { background: #dc3545; color: #fff; border-color: #dc3545; }
+    .sidebar-search { background: #f8f9fc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 4px 10px; margin-bottom: 20px; display: flex; align-items: center; }
+    .sidebar-search input { background: transparent; border: none; color: #333; font-size: 0.9rem; box-shadow: none !important; width: 100%; }
+    .sidebar-section-title { font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; color: #004494; margin: 15px 0 8px 10px; font-weight: 800; opacity: 0.8; }
+    .sidebar-menu { display: flex; flex-direction: column; gap: 4px; }
+    .sidebar-item { display: flex; align-items: center; padding: 12px 15px; border-radius: 12px; color: #495057; font-size: 0.95rem; font-weight: 600; transition: all 0.2s ease; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; }
+    .sidebar-item:hover { background: #f0f7ff; color: #0d6efd; transform: translateX(5px); }
+    .sidebar-item i { font-size: 1.2rem; color: #6c757d; transition: 0.2s; min-width: 25px; text-align: center; margin-right: 10px; }
+    .sidebar-item:hover i { color: #0d6efd; }
+    .sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
+    .sidebar-user { display: flex; align-items: center; gap: 12px; padding-top: 15px; border-top: 2px dashed #e9ecef; }
+    .sidebar-avatar { width: 42px; min-width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #004494 0%, #dc3545 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+
+    /* MÀN HÌNH MÁY TÍNH: MẶC ĐỊNH LÀ THU GỌN THÀNH BIỂU TƯỢNG */
+    @media (min-width: 992px) {
+        .modern-sidebar { left: 0 !important; width: 85px; padding: 20px 10px; border-radius: 0; }
+        .modern-sidebar.show { width: 270px; padding: 20px 15px; }
+        .sidebar-overlay { display: none !important; }
+        
+        /* Đẩy nội dung toàn bộ trang sang phải 85px để không bị menu đè */
+        #dashboard, #teacher-dashboard { padding-left: 85px; transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Tự động căn giữa Icon và ẩn chữ khi đang thu gọn */
+        .modern-sidebar:not(.show) .sidebar-item { padding: 12px 0; justify-content: center; transform: none !important; }
+        .modern-sidebar:not(.show) .sidebar-item i { margin-right: 0 !important; font-size: 1.4rem; }
+        .modern-sidebar:not(.show) .sidebar-brand { justify-content: center; padding: 0; }
+        .modern-sidebar:not(.show) .sidebar-brand i { margin-right: 0 !important; font-size: 1.8rem !important; }
+        .modern-sidebar:not(.show) .sidebar-search { padding: 10px 0; justify-content: center; background: transparent; border: none; }
+        .modern-sidebar:not(.show) .sidebar-search i { margin-right: 0 !important; font-size: 1.2rem; }
+        .modern-sidebar:not(.show) .sidebar-user { justify-content: center; border-top: none; padding-top: 5px; }
+        .modern-sidebar:not(.show) .sidebar-avatar { margin: 0; }
+        
+        /* Ẩn hoàn toàn chữ, thanh tìm kiếm và tiêu đề */
+        .modern-sidebar:not(.show) .sidebar-text,
+        .modern-sidebar:not(.show) .sidebar-user-info,
+        .modern-sidebar:not(.show) .sidebar-section-title,
+        .modern-sidebar:not(.show) .sidebar-search input { display: none !important; }
+        
+        /* Hiện nút Đăng xuất loại mini */
+        .modern-sidebar:not(.show) .sidebar-mini-logout { display: flex !important; align-items: center; justify-content: center; }
+        
+        /* Ẩn nút 3 gạch vuông vức trôi nổi bên ngoài vì đã có menu cố định */
+        #dashboard > button.btn-white, #teacher-dashboard > button.btn-white { display: none !important; }
+    }
+    
+    /* MÀN HÌNH ĐIỆN THOẠI: GIỮ NGUYÊN KIỂU TRƯỢT VÀO VÀ MÀNG ĐEN */
+    @media (max-width: 991px) {
+        .modern-sidebar { border-radius: 0 24px 24px 0; }
+        .btn-close-sidebar { display: flex !important; }
+    }
     /* CSS CỐT LÕI (GIỮ NGUYÊN BẢN GỐC CỦA THẦY) */
     .swal2-container { z-index: 99999 !important; }
     html, body { margin: 0; min-height: 100vh; font-family: 'Segoe UI', sans-serif; background-color: #f8f9fc; overflow-x: hidden; }
@@ -4261,33 +4287,38 @@ window.previewTeacherExam = function(examId, durationMins) {
 <!-- ================= VÙNG AN TOÀN: SIDEBAR ================= -->
 <div id="teacherModernSidebar" class="modern-sidebar">
     <div class="sidebar-header">
-        <div class="sidebar-brand"><i class="bi bi-hexagon-half text-primary"></i> Hệ thống quản lý</div>
-        <button class="btn-close-sidebar" onclick="toggleTeacherSidebar()"><i class="bi bi-x-lg"></i></button>
+        <div class="sidebar-brand">
+            <i class="bi bi-list text-primary me-2" style="font-size: 1.8rem; cursor: pointer;" onclick="toggleTeacherSidebar()" title="Mở/Đóng Menu"></i> 
+            <span class="sidebar-text">Quản Trị</span>
+        </div>
+        <button class="btn-close-sidebar d-lg-none" onclick="toggleTeacherSidebar()"><i class="bi bi-x-lg"></i></button>
     </div>
     
-    <div class="sidebar-search d-flex align-items-center">
-        <i class="bi bi-search text-muted me-2"></i>
-        <input type="text" class="form-control form-control-sm" placeholder="Tìm nhanh...">
+    <div class="sidebar-search">
+        <i class="bi bi-search text-muted"></i>
+        <input type="text" class="form-control form-control-sm sidebar-text ms-2" placeholder="Tìm nhanh...">
     </div>
 
-    <div class="sidebar-section-title">QUẢN LÝ HỌC TẬP</div>
+    <div class="sidebar-section-title sidebar-text">QUẢN LÝ HỌC TẬP</div>
     <div class="sidebar-menu">
-        <button class="sidebar-item" onclick="toggleTeacherSidebar(); openAssignModal();"><i class="bi bi-send-plus"></i> Giao Bài Mới</button>
-        <button class="sidebar-item" onclick="toggleTeacherSidebar(); openAssignedLessonsModal();"><i class="bi bi-journal-check"></i> Bài Đã Giao</button>
-        <button class="sidebar-item" onclick="toggleTeacherSidebar(); openStudentProfilesModal();"><i class="bi bi-people"></i> Học Sinh</button>
-        <button class="sidebar-item" onclick="toggleTeacherSidebar(); openGradeMatrixModal();"><i class="bi bi-table"></i> Bảng Điểm Lớp</button>
+        <button class="sidebar-item" onclick="toggleTeacherSidebar(); openAssignModal();" title="Giao Bài Mới"><i class="bi bi-send-plus"></i> <span class="sidebar-text">Giao Bài Mới</span></button>
+        <button class="sidebar-item" onclick="toggleTeacherSidebar(); openAssignedLessonsModal();" title="Bài Đã Giao"><i class="bi bi-journal-check"></i> <span class="sidebar-text">Bài Đã Giao</span></button>
+        <button class="sidebar-item" onclick="toggleTeacherSidebar(); openStudentProfilesModal();" title="Học Sinh"><i class="bi bi-people"></i> <span class="sidebar-text">Học Sinh</span></button>
+        <button class="sidebar-item" onclick="toggleTeacherSidebar(); openGradeMatrixModal();" title="Bảng Điểm Lớp"><i class="bi bi-table"></i> <span class="sidebar-text">Bảng Điểm Lớp</span></button>
     </div>
 
-    <div class="sidebar-section-title">KHẢO THÍ & HỆ THỐNG</div>
+    <div class="sidebar-section-title sidebar-text mt-3">KHẢO THÍ & HỆ THỐNG</div>
     <div class="sidebar-menu">
-        <button class="sidebar-item" onclick="toggleTeacherSidebar(); openExamManagerModal();"><i class="bi bi-gear"></i> QUẢN LÝ KÌ THI</button>
-        <button class="sidebar-item" onclick="toggleTeacherSidebar(); loadTeacherData();"><i class="bi bi-arrow-clockwise"></i> Cập Nhật Dữ Liệu</button>
+        <button class="sidebar-item" onclick="toggleTeacherSidebar(); openExamManagerModal();" title="Quản lý kì thi"><i class="bi bi-gear"></i> <span class="sidebar-text">QUẢN LÝ KÌ THI</span></button>
+        <button class="sidebar-item" onclick="toggleTeacherSidebar(); loadTeacherData();" title="Cập nhật dữ liệu"><i class="bi bi-arrow-clockwise"></i> <span class="sidebar-text">Cập Nhật Dữ Liệu</span></button>
     </div>
 
     <div class="sidebar-footer">
+        <!-- Nút logout mini (chỉ hiện khi thu nhỏ) -->
+        <button class="btn btn-outline-danger rounded-circle mx-auto mb-2 shadow-sm sidebar-mini-logout" style="width: 42px; height: 42px; display: none;" onclick="logout()" title="Đăng Xuất"><i class="bi bi-box-arrow-right m-0"></i></button>
         <div class="sidebar-user">
             <div class="sidebar-avatar">DNK</div>
-            <div style="overflow: hidden;">
+            <div class="sidebar-user-info ms-2">
                 <div class="fw-bold text-dark small text-truncate">Dương Nguyên Khoa</div>
                 <div class="text-muted" style="font-size: 0.7rem;">Giáo viên quản trị</div>
             </div>
@@ -4301,29 +4332,35 @@ window.previewTeacherExam = function(examId, durationMins) {
 <!-- ================= VÙNG AN TOÀN: SIDEBAR HỌC SINH ================= -->
 <div id="studentModernSidebar" class="modern-sidebar">
     <div class="sidebar-header">
-        <div class="sidebar-brand"><i class="bi bi-hexagon-half text-success"></i> Góc Học Tập</div>
-        <button class="btn-close-sidebar" onclick="toggleStudentSidebar()"><i class="bi bi-x-lg"></i></button>
+        <div class="sidebar-brand">
+            <i class="bi bi-list text-success me-2" style="font-size: 1.8rem; cursor: pointer;" onclick="toggleStudentSidebar()" title="Mở/Đóng Menu"></i> 
+            <span class="sidebar-text">Góc Học Tập</span>
+        </div>
+        <button class="btn-close-sidebar d-lg-none" onclick="toggleStudentSidebar()"><i class="bi bi-x-lg"></i></button>
     </div>
     
-    <div class="sidebar-section-title text-success">ĐIỀU HƯỚNG & CHỨC NĂNG</div>
+    <div class="sidebar-section-title text-success sidebar-text mt-2">ĐIỀU HƯỚNG & CHỨC NĂNG</div>
     <div class="sidebar-menu">
-        <button class="sidebar-item" onclick="document.getElementById('home-tab').click(); toggleStudentSidebar();"><i class="bi bi-house-door-fill text-primary"></i> Tổng Quan</button>
-        <button class="sidebar-item" onclick="document.getElementById('all-tab').click(); toggleStudentSidebar();"><i class="bi bi-collection-fill text-info"></i> Kho Bài Tập</button>
-        <button class="sidebar-item" onclick="toggleStudentSidebar(); loadLessons();"><i class="bi bi-arrow-clockwise text-success"></i> Làm mới dữ liệu</button>
-        <button class="sidebar-item" onclick="toggleStudentSidebar(); showStudentReport();"><i class="bi bi-bar-chart-fill text-warning"></i> Xem Bảng Điểm</button>
+        <button class="sidebar-item" onclick="document.getElementById('home-tab').click(); toggleStudentSidebar();" title="Tổng Quan"><i class="bi bi-house-door-fill text-primary"></i> <span class="sidebar-text">Tổng Quan</span></button>
+        <button class="sidebar-item" onclick="document.getElementById('all-tab').click(); toggleStudentSidebar();" title="Kho Bài Tập"><i class="bi bi-collection-fill text-info"></i> <span class="sidebar-text">Kho Bài Tập</span></button>
+        <button class="sidebar-item" onclick="toggleStudentSidebar(); loadLessons();" title="Làm mới dữ liệu"><i class="bi bi-arrow-clockwise text-success"></i> <span class="sidebar-text">Làm mới dữ liệu</span></button>
+        <button class="sidebar-item" onclick="toggleStudentSidebar(); showStudentReport();" title="Xem Bảng Điểm"><i class="bi bi-bar-chart-fill text-warning"></i> <span class="sidebar-text">Xem Bảng Điểm</span></button>
     </div>
 
-    <div class="sidebar-section-title text-success">CÀI ĐẶT TÀI KHOẢN</div>
+    <div class="sidebar-section-title text-success sidebar-text mt-3">CÀI ĐẶT TÀI KHOẢN</div>
     <div class="sidebar-menu">
-        <button class="sidebar-item" onclick="toggleStudentSidebar(); openUpdateEmailModal();"><i class="bi bi-envelope-at-fill text-secondary"></i> Cập nhật Email</button>
-        <button class="sidebar-item" onclick="toggleStudentSidebar(); openChangePassModal();"><i class="bi bi-key-fill text-warning"></i> Đổi Mật Khẩu</button>
+        <button class="sidebar-item" onclick="toggleStudentSidebar(); openUpdateEmailModal();" title="Cập nhật Email"><i class="bi bi-envelope-at-fill text-secondary"></i> <span class="sidebar-text">Cập nhật Email</span></button>
+        <button class="sidebar-item" onclick="toggleStudentSidebar(); openChangePassModal();" title="Đổi Mật Khẩu"><i class="bi bi-key-fill text-warning"></i> <span class="sidebar-text">Đổi Mật Khẩu</span></button>
     </div>
 
     <div class="sidebar-footer">
-        <button class="btn btn-outline-danger fw-bold rounded-pill w-100 mb-2 shadow-sm py-2" onclick="logout()"><i class="bi bi-box-arrow-right"></i> ĐĂNG XUẤT</button>
+        <button class="btn btn-outline-danger fw-bold rounded-pill w-100 mb-2 shadow-sm py-2 sidebar-text" onclick="logout()"><i class="bi bi-box-arrow-right me-1"></i> ĐĂNG XUẤT</button>
+        <!-- Nút logout mini (chỉ hiện khi thu nhỏ) -->
+        <button class="btn btn-outline-danger rounded-circle mx-auto mb-2 shadow-sm sidebar-mini-logout" style="width: 42px; height: 42px; display: none;" onclick="logout()" title="Đăng Xuất"><i class="bi bi-box-arrow-right m-0 fs-5"></i></button>
+        
         <div class="sidebar-user">
             <div class="sidebar-avatar" style="background: linear-gradient(135deg, #198754 0%, #0d6efd 100%);"><i class="bi bi-person-fill"></i></div>
-            <div style="overflow: hidden;">
+            <div class="sidebar-user-info ms-2">
                 <div id="sidebar-student-name" class="fw-bold text-dark small text-truncate">Đang tải...</div>
                 <div id="sidebar-student-id" class="text-muted fw-bold" style="font-size: 0.75rem;">Đang tải...</div>
             </div>
