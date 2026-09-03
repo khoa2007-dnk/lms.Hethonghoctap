@@ -2475,13 +2475,19 @@ function checkDGNLStatus() {
             let statusHtml = ''; let btnHtml = '';
 
             if (ex.isSubmitted) {
-                if (ex.status === "Đã trả điểm") {
+                // Tăng cường bộ nhận diện trạng thái từ Google Sheet
+                let isPublished = (ex.status === "Đã trả điểm" || ex.status === "Đã công bố" || ex.status === "PUBLISHED" || ex.status === "COMPLETED" || ex.isPublished === true);
+                let isGraded = (ex.status === "Đã chấm" || ex.status === "GRADED" || (ex.score !== "" && ex.score !== undefined && ex.score !== null));
+
+                if (isPublished) {
                     statusHtml = `<div class="mt-2 text-center"><span class="badge bg-success shadow-sm px-3 py-2 rounded-pill"><i class="bi bi-trophy-fill text-warning"></i> ĐIỂM SỐ: ${ex.score}</span></div>`;
                     btnHtml = `<button class="btn btn-warning text-dark w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" onclick="openExamReviewMulti('${ex.id}')"><i class="bi bi-eye-fill me-1"></i> XEM LẠI BÀI LÀM</button>`;
                     borderColor = '#198754'; iconBg = '#198754'; titleColor = '#198754';
                 } else {
-                    statusHtml = `<div class="mt-2 text-center"><span class="badge bg-secondary shadow-sm px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split"></i> Đang chờ chấm...</span></div>`;
-                    btnHtml = `<button class="btn text-white w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" style="background: linear-gradient(135deg, #885CF6 0%, #c4b5fd 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="openExamTrackingModal('${ex.examTitle}')"><i class="bi bi-radar me-1"></i> XEM TIẾN TRÌNH</button>`;
+                    // Trạng thái chờ: Nhận diện đã Tự động chấm hay chưa
+                    let waitText = isGraded ? "Đã chấm xong, chờ công bố" : "Đang chờ chấm...";
+                    statusHtml = `<div class="mt-2 text-center"><span class="badge bg-secondary shadow-sm px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split"></i> ${waitText}</span></div>`;
+                    btnHtml = `<button class="btn text-white w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" style="background: linear-gradient(135deg, #885CF6 0%, #c4b5fd 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="openExamTrackingModal('${ex.examTitle}', ${isGraded})"><i class="bi bi-radar me-1"></i> XEM TIẾN TRÌNH</button>`;
                     borderColor = '#6c757d'; iconBg = '#6c757d'; titleColor = '#6c757d';
                 }
             } else {
@@ -4354,12 +4360,23 @@ document.addEventListener('show.bs.modal', function (event) {
     }
 });
 </script>
-  <script>
-// HÀM HIỂN THỊ TIẾN TRÌNH CHẤM BÀI (PREMIUM UI)
-window.openExamTrackingModal = function(examTitle) {
+<script>
+// HÀM HIỂN THỊ TIẾN TRÌNH CHẤM BÀI (PREMIUM UI - ĐỘNG)
+window.openExamTrackingModal = function(examTitle, isGraded) {
     let today = new Date();
     let dateStr = today.getDate() + "/" + (today.getMonth()+1) + "/" + today.getFullYear();
     
+    // Xử lý logic giao diện dựa trên việc Giáo viên đã bấm "Tự động chấm" hay chưa
+    let step3Class = isGraded ? "done" : "active";
+    let step3Icon = isGraded ? `<i class="bi bi-check-lg"></i>` : ``;
+    let step3Status = isGraded ? `<div class="timeline-status status-done">Done</div>` : `<div class="timeline-status status-active">Live</div>`;
+    let step3Desc = isGraded ? "Hoàn tất phân tích kết quả" : "Thầy Khoa đang xem xét bài";
+
+    let step4Class = isGraded ? "active" : "pending";
+    let step4Icon = ``; // Giai đoạn 4 chưa xong nên không có icon check
+    let step4Status = isGraded ? `<div class="timeline-status status-active">Live</div>` : `<div class="timeline-status status-pending">Pending</div>`;
+    let step4Desc = isGraded ? "Hệ thống chuẩn bị gửi Email & Điểm" : "Chờ thông báo chính thức";
+
     Swal.fire({
         showConfirmButton: false,
         showCloseButton: true,
@@ -4397,27 +4414,27 @@ window.openExamTrackingModal = function(examTitle) {
                 </div>
             </div>
 
-            <!-- Giai đoạn 3 (Đang diễn ra) -->
-            <div class="timeline-item active">
-                <div class="timeline-icon"></div>
+            <!-- Giai đoạn 3 (Động) -->
+            <div class="timeline-item ${step3Class}">
+                <div class="timeline-icon">${step3Icon}</div>
                 <div class="timeline-content d-flex justify-content-between align-items-center">
                     <div>
                         <h6>Giáo viên đang chấm</h6>
-                        <p>Thầy Khoa đang xem xét bài</p>
+                        <p>${step3Desc}</p>
                     </div>
-                    <div class="timeline-status status-active">Live</div>
+                    ${step3Status}
                 </div>
             </div>
 
-            <!-- Giai đoạn 4 (Chưa tới) -->
-            <div class="timeline-item pending">
-                <div class="timeline-icon"></div>
+            <!-- Giai đoạn 4 (Động) -->
+            <div class="timeline-item ${step4Class}">
+                <div class="timeline-icon">${step4Icon}</div>
                 <div class="timeline-content d-flex justify-content-between align-items-center">
                     <div>
                         <h6>Công bố điểm số</h6>
-                        <p>Chờ thông báo chính thức</p>
+                        <p>${step4Desc}</p>
                     </div>
-                    <div class="timeline-status status-pending">Pending</div>
+                    ${step4Status}
                 </div>
             </div>
 
