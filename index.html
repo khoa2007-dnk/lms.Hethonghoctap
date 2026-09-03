@@ -152,10 +152,15 @@
     .sidebar-avatar { width: 42px; min-width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #004494 0%, #dc3545 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 
    /* =================================================================== */
-    /* VÁ LỖI: ẨN SIDEBAR KHI Ở TRANG ĐĂNG NHẬP VÀ CĂN CHỈNH KÍCH THƯỚC    */
+    /* VÁ LỖI: ẨN SIDEBAR KHI Ở TRANG ĐĂNG NHẬP VÀ CHỐNG ĐÈ MENU           */
     /* =================================================================== */
-    #login-container:not([style*="display: none"]) ~ .modern-sidebar { display: none !important; }
-    #login-container:not([style*="display: none"]) ~ .sidebar-overlay { display: none !important; }
+    /* Khi màn hình Học sinh đóng -> Ẩn luôn Menu Học sinh */
+    #dashboard[style*="display: none"] ~ #studentModernSidebar, 
+    #dashboard[style*="display: none"] ~ #studentSidebarOverlay { display: none !important; }
+    
+    /* Khi màn hình Giáo viên đóng -> Ẩn luôn Menu Giáo viên */
+    #teacher-dashboard[style*="display: none"] ~ #teacherModernSidebar, 
+    #teacher-dashboard[style*="display: none"] ~ #sidebarOverlay { display: none !important; }
 
     /* MÀN HÌNH MÁY TÍNH: MENU TRÁI LUÔN HIỆN, THU GỌN CHỈ CÒN ICON */
     @media (min-width: 992px) {
@@ -4389,29 +4394,44 @@ function toggleTeacherSidebar() {
     let sidebar = document.getElementById('teacherModernSidebar');
     let overlay = document.getElementById('sidebarOverlay');
     let dashboard = document.getElementById('teacher-dashboard');
+    
     if (sidebar && overlay) {
         sidebar.classList.toggle('show');
         overlay.classList.toggle('show');
-        // Lệnh đẩy trang web sang phải
-        if (dashboard) dashboard.classList.toggle('dashboard-shifted');
+        
+        // ĐỒNG BỘ TUYỆT ĐỐI: Menu có mở (.show) thì trang mới xô sang phải
+        if (dashboard) {
+            if (sidebar.classList.contains('show')) {
+                dashboard.classList.add('dashboard-shifted');
+            } else {
+                dashboard.classList.remove('dashboard-shifted');
+            }
+        }
     }
 }
+
 // ================= HÀM MỞ SIDEBAR HỌC SINH =================
 function toggleStudentSidebar() {
     let sidebar = document.getElementById('studentModernSidebar');
     let overlay = document.getElementById('studentSidebarOverlay');
     let dashboard = document.getElementById('dashboard');
+    
     if (sidebar && overlay) {
         sidebar.classList.toggle('show');
         overlay.classList.toggle('show');
-        // Lệnh đẩy trang web sang phải
-        if (dashboard) dashboard.classList.toggle('dashboard-shifted');
+        
+        // ĐỒNG BỘ TUYỆT ĐỐI: Menu có mở (.show) thì trang mới xô sang phải
+        if (dashboard) {
+            if (sidebar.classList.contains('show')) {
+                dashboard.classList.add('dashboard-shifted');
+            } else {
+                dashboard.classList.remove('dashboard-shifted');
+            }
+        }
         
         // Tự động quét và điền Tên + Mã học sinh vào Menu
         let nameEl = document.getElementById('sidebar-student-name');
         let idEl = document.getElementById('sidebar-student-id');
-        
-        // Lấy thông tin từ biến toàn cục hoặc bộ nhớ tạm
         let session = JSON.parse(localStorage.getItem('lms_session') || '{}');
         let safeName = window.currentStudentName || currentStudentName || session.name || "Học sinh ẩn danh";
         let safeId = window.currentStudentId || currentStudentId || session.id || "Chưa có mã";
