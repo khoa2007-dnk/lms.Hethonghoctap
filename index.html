@@ -2589,7 +2589,7 @@ function handleSystemLock(isLocked) {
             document.getElementById('lockStatusText').innerText = "Trạng thái: Đang mở 🟢";
             document.getElementById('lockStatusText').style.color = "gray";
             Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã mở khóa hệ thống!', showConfirmButton: false, timer: 2000});
-        }).toggleSystemLock(false, []);
+        }).toggleSystemLock(false, [], ""); // Gửi reason rỗng khi mở khóa
         return;
     }
     document.getElementById('systemLockSwitch').checked = false;
@@ -2618,7 +2618,8 @@ function handleSystemLock(isLocked) {
             if (result.isConfirmed) {
                 let selected = Array.from(document.querySelectorAll('.class-lock-cb:checked')).map(cb => cb.value);
                 // Lấy nội dung lý do giáo viên vừa nhập
-                let reason = document.getElementById('lock-reason-input').value.trim() || "Tạm khóa hệ thống";
+                let reason = document.getElementById('lock-reason-input') ? document.getElementById('lock-reason-input').value.trim() : "Tạm khóa hệ thống";
+                if (!reason) reason = "Tạm khóa hệ thống";
 
                 document.getElementById('lockStatusText').innerText = '⏳ Đang lưu...';
                 document.getElementById('systemLockSwitch').disabled = true;
@@ -2630,7 +2631,7 @@ function handleSystemLock(isLocked) {
                     document.getElementById('lockStatusText').innerText = text;
                     document.getElementById('lockStatusText').style.color = "#dc3545";
                     Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã lưu thiết lập khóa!', showConfirmButton: false, timer: 2000});
-                }).toggleSystemLock(true, selected, reason); // <--- ĐÃ TRUYỀN THÊM BIẾN REASON VÀO API
+                }).toggleSystemLock(true, selected, reason); // Truyền reason xuống API
             }
         });
     }).getUniqueClasses();
