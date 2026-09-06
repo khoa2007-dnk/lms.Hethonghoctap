@@ -19,6 +19,93 @@
   <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
   <style>
     /* =================================================================== */
+    /* 1. CHẾ ĐỘ TỐI (DARK MODE ENGINE) VÀ CÔNG TẮC PREMIUM (THEME SWITCH) */
+    /* =================================================================== */
+    :root {
+        --bg-main: #f8f9fc;
+        --bg-card: #ffffff;
+        --text-main: #1e293b;
+        --text-sub: #64748b;
+        --border-color: #e2e8f0;
+    }
+    
+    body.dark-theme {
+        --bg-main: #0f172a;
+        --bg-card: #1e293b;
+        --text-main: #f1f5f9;
+        --text-sub: #94a3b8;
+        --border-color: #334155;
+    }
+
+    /* Ép màu nền và chữ theo biến môi trường */
+    body { background-color: var(--bg-main) !important; color: var(--text-main) !important; transition: background-color 0.3s ease, color 0.3s ease; }
+    body.dark-theme .bg-white, body.dark-theme .bg-light, body.dark-theme .saas-stat-card, body.dark-theme .modern-sidebar, body.dark-theme .modal-content {
+        background-color: var(--bg-card) !important; border-color: var(--border-color) !important; color: var(--text-main) !important;
+    }
+    body.dark-theme .text-dark, body.dark-theme .text-primary { color: var(--text-main) !important; }
+    body.dark-theme .text-muted { color: var(--text-sub) !important; }
+    
+    /* Công tắc Neumorphism Sáng/Tối */
+    .premium-theme-switch {
+        position: relative; width: 64px; height: 32px; background: #e2e8f0; border-radius: 16px;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; padding: 4px;
+        transition: background 0.4s ease; margin: 0 auto;
+    }
+    body.dark-theme .premium-theme-switch { background: #0f172a; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+    .switch-knob {
+        width: 24px; height: 24px; border-radius: 50%; background: #f59e0b;
+        box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4); display: flex; justify-content: center; align-items: center;
+        color: white; font-size: 12px; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s;
+    }
+    body.dark-theme .switch-knob { transform: translateX(32px); background: #38bdf8; box-shadow: 0 2px 6px rgba(56, 189, 248, 0.4); color: #0f172a; }
+
+    /* =================================================================== */
+    /* 2. PREMIUM CHECKBOX (NÚT TICK GHI NHỚ ĐĂNG NHẬP)                    */
+    /* =================================================================== */
+    .premium-checkbox { display: flex; align-items: center; cursor: pointer; user-select: none; gap: 10px; font-weight: 600; color: var(--text-sub); }
+    .premium-checkbox input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+    .checkmark { position: relative; height: 24px; width: 24px; background-color: var(--bg-card); border: 2px solid var(--border-color); border-radius: 8px; transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; }
+    .premium-checkbox:hover input ~ .checkmark { border-color: #0d47a1; }
+    .premium-checkbox input:checked ~ .checkmark { background-color: #0d47a1; border-color: #0d47a1; box-shadow: 0 4px 10px rgba(13, 71, 161, 0.2); }
+    .checkmark:after { content: ""; position: absolute; display: none; width: 6px; height: 12px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px; }
+    .premium-checkbox input:checked ~ .checkmark:after { display: block; animation: checkAnim 0.2s ease forwards; }
+    @keyframes checkAnim { 0% { height: 0; width: 0; opacity: 0; } 100% { height: 12px; width: 6px; opacity: 1; } }
+
+    /* =================================================================== */
+    /* 3. PREMIUM TOAST NOTIFICATION (THÔNG BÁO NỔI CÓ THANH TIẾN TRÌNH)   */
+    /* =================================================================== */
+    #premium-toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1060; display: flex; flex-direction: column; gap: 10px; }
+    .premium-toast {
+        background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 15px; position: relative;
+        overflow: hidden; min-width: 300px; transform: translateX(120%); animation: slideInToast 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    @keyframes slideInToast { to { transform: translateX(0); } }
+    .premium-toast.hide { animation: slideOutToast 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+    @keyframes slideOutToast { to { transform: translateX(120%); opacity: 0; } }
+    .toast-icon { font-size: 1.5rem; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .toast-icon.success { background: #dcfce7; color: #15803d; }
+    .toast-icon.error { background: #fee2e2; color: #b91c1c; }
+    .toast-content h6 { margin: 0 0 4px 0; font-weight: 800; color: var(--text-main); font-size: 1rem; }
+    .toast-content p { margin: 0; font-size: 0.85rem; color: var(--text-sub); }
+    .toast-progress { position: absolute; bottom: 0; left: 0; height: 4px; background: #15803d; width: 100%; transform-origin: left; animation: progressShrink linear forwards; }
+    @keyframes progressShrink { to { transform: scaleX(0); } }
+
+    /* =================================================================== */
+    /* 4. PREMIUM FEATURE CARD (THẺ NỘI DUNG HIỆU ỨNG CHẤT LỎNG)         */
+    /* =================================================================== */
+    .premium-feature-card {
+        position: relative; overflow: hidden; border-radius: 20px; border: none; background: var(--bg-card);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.04); transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .premium-feature-card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(13, 110, 253, 0.1); }
+    .card-liquid-shape {
+        position: absolute; top: -30px; right: -30px; width: 100px; height: 100px;
+        background: linear-gradient(135deg, #0d6efd 0%, #8b5cf6 100%); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+        opacity: 0.1; transition: all 0.5s ease;
+    }
+    .premium-feature-card:hover .card-liquid-shape { transform: scale(2) rotate(45deg); opacity: 0.15; border-radius: 50%; }
+    /* =================================================================== */
     /* PREMIUM INPUT UI: NHÃN NỔI CHO TRANG ĐĂNG NHẬP (SAAS LOGIN)         */
     /* =================================================================== */
     .saas-input-group {
@@ -525,6 +612,7 @@
 <body>
   <!-- HÌNH NỀN VÀ CỘT MÀU -->
   <div id="math-background"></div>
+  <div id="premium-toast-container"></div>
   <div id="side-branding-bar"></div>
 
   <!-- MÀN HÌNH ĐĂNG NHẬP -->
@@ -546,7 +634,12 @@
             <input type="password" id="pass" placeholder=" ">
             <label for="pass">Mật khẩu</label>
         </div>
-        
+        <!-- Checkbox Premium: Ghi nhớ đăng nhập -->
+        <label class="premium-checkbox mb-4 mt-2">
+            <input type="checkbox" id="rememberMe">
+            <span class="checkmark"></span>
+            <span class="text">Ghi nhớ đăng nhập</span>
+        </label>
         <button class="btn-login mt-2" id="loginBtn" onclick="login()">TRUY CẬP</button>
       </div>
       <div class="text-center py-3 text-muted small border-top fw-bold">Được tạo và quản lý bởi Dương Nguyên Khoa</div>
@@ -849,10 +942,11 @@
           <div class="bg-white p-3 rounded-4 shadow-sm border border-info mb-2">
             <label class="form-label fw-bold text-primary fs-6 mb-3"><i class="bi bi-people-fill text-primary me-1"></i> Đối tượng nhận bài</label>
             <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-3">
-              <div class="form-check mb-0 d-flex align-items-center gap-2">
-                <input class="form-check-input border-success fs-5 mt-0" type="checkbox" id="check-all" checked onchange="toggleAllStudents()">
-                <label class="form-check-label fw-bold text-success mb-0 mt-1">Chọn cả lớp</label>
-              </div>
+              <label class="premium-checkbox mb-0 text-success ms-1">
+                <input type="checkbox" id="check-all" checked onchange="toggleAllStudents()">
+                <span class="checkmark" style="border-color: #198754;"></span>
+                <span class="fw-bold mt-1 ms-1">Chọn cả lớp</span>
+              </label>
               <select id="assign-filter-grade" class="form-select form-select-sm w-auto border-info text-dark fw-bold shadow-sm" onchange="filterAssignStudents()"><option value="ALL">🏫 Mọi khối lớp</option></select>
             </div>
             <div class="bg-light border p-3 rounded-3" id="student-checkboxes" style="max-height: 200px; overflow-y: auto;">
@@ -1633,13 +1727,14 @@ function filterAssignStudents() {
             
             html += `
             <div class="col-md-6">
-                <div class="form-check border rounded-3 p-2 shadow-sm d-flex align-items-center" style="background-color: #ffffff; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='#ffffff'">
-                    <input class="form-check-input ms-1 me-2 student-checkbox" type="checkbox" value="${s.id}" id="chk-${s.id}" ${isChecked}>
-                    <label class="form-check-label w-100 fw-bold text-dark d-flex justify-content-between align-items-center" style="cursor: pointer; font-size: 0.9rem;" for="chk-${s.id}">
-                        <span class="text-truncate" style="max-width: 140px;">${s.name}</span>
+                <label class="premium-checkbox border rounded-3 p-2 shadow-sm d-flex align-items-center m-0 w-100" style="background-color: #ffffff; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='#ffffff'">
+                    <input class="student-cb" type="checkbox" value="${s.id}" id="chk-${s.id}" ${isChecked}>
+                    <span class="checkmark flex-shrink-0 me-2"></span>
+                    <div class="w-100 d-flex justify-content-between align-items-center" style="font-size: 0.9rem;">
+                        <span class="text-truncate text-dark fw-bold" style="max-width: 140px; margin-top: 2px;">${s.name}</span>
                         <span class="badge bg-light text-secondary border border-secondary shadow-sm" style="font-size: 0.7rem;">Khối ${s.grade || ''}</span>
-                    </label>
-                </div>
+                    </div>
+                </label>
             </div>`;
         });
         html += '</div>';
@@ -1676,25 +1771,27 @@ function openAssignModal() {
         select.innerHTML = '<option value="ALL">🏫 Mọi khối lớp</option>'; 
         grades.forEach(g => { select.innerHTML += `<option value="${g}">Khối ${g}</option>`; });
         
-        students.forEach(s => { 
+       students.forEach(s => { 
             if (s.isDisabled) {
                 box.innerHTML += `
-                <div class="form-check student-item mb-2 opacity-50" data-grade="${s.grade}" style="background-color: #e9ecef; border-radius: 5px; padding: 5px 5px 5px 30px;">
-                    <input class="form-check-input student-cb mt-0" type="checkbox" value="${s.id}" disabled>
-                    <label class="form-check-label fw-bold text-muted ms-2 mt-1" style="text-decoration: line-through;">
+                <label class="premium-checkbox student-item mb-2 opacity-50 d-flex align-items-center w-100 m-0" data-grade="${s.grade}" style="background-color: #e9ecef; border-radius: 8px; padding: 8px 12px; cursor: not-allowed;">
+                    <input class="student-cb" type="checkbox" value="${s.id}" disabled>
+                    <span class="checkmark flex-shrink-0 me-2" style="background-color: #dee2e6; border-color: #ced4da;"></span>
+                    <div class="fw-bold text-muted mt-1" style="text-decoration: line-through;">
                         ${s.name} (${s.id}) <span class="badge bg-secondary ms-1 small">${s.lockReason || 'Tạm khóa'}</span>
-                    </label>
-                </div>`;
+                    </div>
+                </label>`;
             } else {
                 box.innerHTML += `
-                <div class="form-check student-item mb-2" data-grade="${s.grade}">
-                    <input class="form-check-input student-cb border-success fs-5 mt-0" type="checkbox" value="${s.id}" checked>
-                    <label class="form-check-label fw-bold text-dark ms-2 mt-1">
-                        ${s.name} (${s.id})
-                    </label>
-                </div>`;
+                <label class="premium-checkbox student-item mb-2 d-flex align-items-center w-100 m-0 bg-white border shadow-sm" data-grade="${s.grade}" style="border-radius: 8px; padding: 8px 12px; cursor: pointer;">
+                    <input class="student-cb" type="checkbox" value="${s.id}" checked onchange="document.getElementById('check-all').checked = false">
+                    <span class="checkmark flex-shrink-0 me-2"></span>
+                    <div class="fw-bold text-dark mt-1">
+                        ${s.name} <span class="text-muted fw-normal">(${s.id})</span>
+                    </div>
+                </label>`;
             }
-        }); 
+        });
     }).getStudentList(); 
   new bootstrap.Modal(document.getElementById('assignModal')).show(); 
 }
@@ -1762,20 +1859,22 @@ function openEditLesson(index) {
             
             if (s.isDisabled) {
                 box.innerHTML += `
-                <div class="form-check student-item mb-2 opacity-50" data-grade="${s.grade}" style="background-color: #e9ecef; border-radius: 5px; padding: 5px 5px 5px 30px;">
-                    <input class="form-check-input student-cb mt-0" type="checkbox" value="${s.id}" disabled>
-                    <label class="form-check-label fw-bold text-muted ms-2 mt-1" style="text-decoration: line-through;">
+                <label class="premium-checkbox student-item mb-2 opacity-50 d-flex align-items-center w-100 m-0" data-grade="${s.grade}" style="background-color: #e9ecef; border-radius: 8px; padding: 8px 12px; cursor: not-allowed;">
+                    <input class="student-cb" type="checkbox" value="${s.id}" disabled>
+                    <span class="checkmark flex-shrink-0 me-2" style="background-color: #dee2e6; border-color: #ced4da;"></span>
+                    <div class="fw-bold text-muted mt-1" style="text-decoration: line-through;">
                         ${s.name} (${s.id}) <span class="badge bg-secondary ms-1 small">${s.lockReason || 'Tạm khóa'}</span>
-                    </label>
-                </div>`;
+                    </div>
+                </label>`;
             } else {
                 box.innerHTML += `
-                <div class="form-check student-item mb-2" data-grade="${s.grade}">
-                    <input class="form-check-input student-cb border-warning fs-5 mt-0" type="checkbox" value="${s.id}" ${isChecked ? 'checked' : ''} onchange="document.getElementById('check-all').checked = false">
-                    <label class="form-check-label fw-bold text-dark ms-2 mt-1">
-                        ${s.name} (${s.id})
-                    </label>
-                </div>`; 
+                <label class="premium-checkbox student-item mb-2 d-flex align-items-center w-100 m-0 bg-white border shadow-sm" data-grade="${s.grade}" style="border-radius: 8px; padding: 8px 12px; cursor: pointer;">
+                    <input class="student-cb" type="checkbox" value="${s.id}" ${isChecked ? 'checked' : ''} onchange="document.getElementById('check-all').checked = false">
+                    <span class="checkmark flex-shrink-0 me-2"></span>
+                    <div class="fw-bold text-dark mt-1">
+                        ${s.name} <span class="text-muted fw-normal">(${s.id})</span>
+                    </div>
+                </label>`; 
             }
         });
     }).getStudentList();
@@ -2895,7 +2994,7 @@ function openMultiExamForm(examId) {
         document.getElementById("examQuestions").value = 40; document.getElementById("examDuration").value = 90;
         document.getElementById("examTargetType").value = "ALL"; document.getElementById("examTargetIds").value = "";
         document.getElementById("examLatex").value = ""; document.getElementById("examLatex").disabled = false;
-        if (typeof toggleTargetIds === 'function') toggleTargetIds();
+        if (typeof  === 'function') ();
     } else {
         document.getElementById('form-view-title').innerText = "CẬP NHẬT KỲ THI";
         let ex = window.multiExamData.find(e => e.id === examId);
@@ -2904,7 +3003,7 @@ function openMultiExamForm(examId) {
             document.getElementById("examSubject").value = ex.examSubject || ""; document.getElementById("examQuestions").value = ex.examQuestions || 40;
             document.getElementById("examDuration").value = ex.examDuration || 90; document.getElementById("examTargetType").value = ex.targetType || "ALL";
             document.getElementById("examTargetIds").value = (ex.targetType === "SINGLE" && ex.targetIds) ? ex.targetIds : "";
-            if (typeof toggleTargetIds === 'function') toggleTargetIds();
+            if (typeof  === 'function') ();
             let latexInput = document.getElementById("examLatex");
             latexInput.value = "Đang tải mã LaTeX gốc từ máy chủ..."; latexInput.disabled = true; 
             callAPI.then(function(res) { latexInput.disabled = false; latexInput.value = (res && res.success) ? res.latexCode : ""; }).getMultiExamForEdit(examId); 
@@ -4232,22 +4331,23 @@ window.toggleTargetIds = function() {
             students.forEach(s => {
                 let isChecked = idsArray.includes(s.id) ? "checked" : "";
                 let disabledStr = s.isDisabled ? "disabled" : "";
-                let strikeStr = s.isDisabled ? "text-decoration: line-through; opacity: 0.6;" : "";
                 
-                // XỬ LÝ LỖI "KHỐI NULL": Đổi thành chữ "Khác" nếu không có khối
+                let labelStyle = s.isDisabled ? "text-decoration: line-through; opacity: 0.6; cursor: not-allowed;" : "cursor: pointer;";
+                let divStyle = s.isDisabled ? "background-color: #f8f9fa; opacity: 0.7;" : "background-color: #ffffff;";
                 let gradeText = (s.grade && s.grade !== "null") ? `Khối ${s.grade}` : `Khác`;
                 let badgeStr = s.isDisabled 
                     ? `<span class="badge bg-secondary ms-1 shadow-sm" style="font-size: 0.65rem;"><i class="bi bi-lock-fill"></i> ${s.lockReason || 'Tạm khóa'}</span>` 
                     : `<span class="badge bg-light text-dark border border-secondary shadow-sm ms-1" style="font-size: 0.65rem;">${gradeText}</span>`;
                 
-                // XỬ LÝ LỖI GIAO DIỆN XẤU: Dùng d-flex align-items-center ép thẳng hàng
                 html += `
-                <div class="target-student-item bg-white p-2 rounded-3 border border-secondary border-opacity-25 d-flex align-items-center gap-2 shadow-sm" data-name="${s.name.toLowerCase()}" data-id="${s.id.toLowerCase()}" style="cursor: pointer; transition: 0.2s;" onclick="if(!${s.isDisabled}){let cb=document.getElementById('target-${s.id}'); cb.checked=!cb.checked; cb.dispatchEvent(new Event('change'));}">
-                    <input class="form-check-input target-cb border-info m-0 shadow-none" type="checkbox" value="${s.id}" id="target-${s.id}" ${isChecked} ${disabledStr} onchange="updateTargetIdsHidden()" onclick="event.stopPropagation();" style="width: 1.3rem; height: 1.3rem; flex-shrink: 0; cursor: pointer;">
-                    <label class="form-check-label fw-bold small text-dark m-0 w-100" for="target-${s.id}" style="${strikeStr} cursor: pointer; user-select: none;">
-                        ${s.name} <span class="text-muted">(${s.id})</span> ${badgeStr}
-                    </label>
-                </div>`;
+                <label class="premium-checkbox target-student-item p-2 rounded-3 border border-secondary border-opacity-25 d-flex align-items-center w-100 shadow-sm m-0" data-name="${s.name.toLowerCase()}" data-id="${s.id.toLowerCase()}" style="${divStyle} transition: 0.2s;">
+                    <input class="target-cb" type="checkbox" value="${s.id}" id="target-${s.id}" ${isChecked} ${disabledStr} onchange="updateTargetIdsHidden()">
+                    <span class="checkmark flex-shrink-0 me-2" style="${s.isDisabled ? 'background-color: #dee2e6; border-color: #ced4da;' : ''}"></span>
+                    <div class="d-flex justify-content-between align-items-center w-100 small text-dark m-0 mt-1" style="${labelStyle} user-select: none;">
+                        <span><span class="fw-bold">${s.name}</span> <span class="text-muted">(${s.id})</span></span>
+                        ${badgeStr}
+                    </div>
+                </label>`;
             });
             
             html += '</div>';
@@ -4401,7 +4501,13 @@ window.previewTeacherExam = function(examId, durationMins) {
         <button class="btn btn-outline-danger fw-bold rounded-pill w-100 mb-2 shadow-sm py-2 sidebar-text" onclick="logout()"><i class="bi bi-box-arrow-right me-1"></i> ĐĂNG XUẤT</button>
         <!-- Nút logout mini (chỉ hiện khi thu nhỏ) -->
         <button class="btn btn-outline-danger rounded-circle mx-auto mb-2 shadow-sm sidebar-mini-logout" style="width: 42px; height: 42px; display: none;" onclick="logout()" title="Đăng Xuất"><i class="bi bi-box-arrow-right m-0 fs-5"></i></button>
-        
+        <!-- Công tắc Dark Mode / Light Mode -->
+        <div class="mb-3 d-flex flex-column align-items-center sidebar-text">
+            <div class="premium-theme-switch" onclick="toggleTheme()" title="Chuyển chế độ Sáng/Tối">
+                <div class="switch-knob"><i class="bi bi-sun-fill" id="theme-icon"></i></div>
+            </div>
+            <small class="text-muted fw-bold mt-2" id="theme-text">Chế độ Sáng</small>
+        </div>
         <div class="sidebar-user">
             <!-- Đã đổi màu Avatar sang đỏ/xanh chuẩn Giáo viên -->
             <div class="sidebar-avatar bg-danger text-white">DNK</div>
@@ -4445,7 +4551,13 @@ window.previewTeacherExam = function(examId, durationMins) {
         <button class="btn btn-outline-danger fw-bold rounded-pill w-100 mb-2 shadow-sm py-2 sidebar-text" onclick="logout()"><i class="bi bi-box-arrow-right me-1"></i> ĐĂNG XUẤT</button>
         <!-- Nút logout mini (chỉ hiện khi thu nhỏ) -->
         <button class="btn btn-outline-danger rounded-circle mx-auto mb-2 shadow-sm sidebar-mini-logout" style="width: 42px; height: 42px; display: none;" onclick="logout()" title="Đăng Xuất"><i class="bi bi-box-arrow-right m-0 fs-5"></i></button>
-        
+        <!-- Công tắc Dark Mode / Light Mode -->
+        <div class="mb-3 d-flex flex-column align-items-center sidebar-text">
+            <div class="premium-theme-switch" onclick="toggleTheme()" title="Chuyển chế độ Sáng/Tối">
+                <div class="switch-knob"><i class="bi bi-sun-fill" id="theme-icon"></i></div>
+            </div>
+            <small class="text-muted fw-bold mt-2" id="theme-text">Chế độ Sáng</small>
+        </div>
         <div class="sidebar-user">
             <div class="sidebar-avatar" style="background: linear-gradient(135deg, #198754 0%, #0d6efd 100%);"><i class="bi bi-person-fill"></i></div>
             <div class="sidebar-user-info ms-2">
@@ -4694,6 +4806,76 @@ window.openExamTrackingModal = function(examTitle, isGraded) {
         const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
         dateDisplay.innerText = `${days[d.getDay()]}, ${d.getDate()} tháng ${d.getMonth() + 1} năm ${d.getFullYear()}`;
     }
+</script>
+<script>
+    // ===================================================================
+    // HỆ THỐNG DARK MODE ENGINE & THEME SWITCH
+    // ===================================================================
+    function toggleTheme() {
+        const body = document.body;
+        const icon = document.getElementById('theme-icon');
+        const text = document.getElementById('theme-text');
+        
+        body.classList.toggle('dark-theme');
+        const isDark = body.classList.contains('dark-theme');
+        
+        // Lưu lựa chọn của người dùng vào bộ nhớ máy
+        localStorage.setItem('lms_theme', isDark ? 'dark' : 'light');
+        
+        // Cập nhật giao diện công tắc
+        if(isDark) {
+            if(icon) { icon.classList.remove('bi-sun-fill'); icon.classList.add('bi-moon-stars-fill'); }
+            if(text) text.innerText = 'Chế độ Tối';
+        } else {
+            if(icon) { icon.classList.remove('bi-moon-stars-fill'); icon.classList.add('bi-sun-fill'); }
+            if(text) text.innerText = 'Chế độ Sáng';
+        }
+    }
+
+    // Khôi phục giao diện Tối/Sáng khi F5 tải lại trang
+    document.addEventListener("DOMContentLoaded", function() {
+        const savedTheme = localStorage.getItem('lms_theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            if(icon) { icon.classList.remove('bi-sun-fill'); icon.classList.add('bi-moon-stars-fill'); }
+            if(text) text.innerText = 'Chế độ Tối';
+        }
+    });
+
+    // ===================================================================
+    // HỆ THỐNG PREMIUM TOAST (THÔNG BÁO GÓC MÀN HÌNH CÓ THANH CHẠY)
+    // Thay thế cho thẻ Swal trong một số trường hợp cần thao tác nhanh
+    // Cách dùng: showPremiumToast('Thành công', 'Đã lưu điểm!', 'success');
+    // ===================================================================
+    window.showPremiumToast = function(title, message, type = 'success', duration = 3000) {
+        const container = document.getElementById('premium-toast-container');
+        if (!container) return;
+
+        const iconClass = type === 'success' ? 'bi-check-circle-fill' : 'bi-x-circle-fill';
+        const colorClass = type === 'success' ? 'success' : 'error';
+        const progressColor = type === 'success' ? '#15803d' : '#b91c1c';
+
+        const toast = document.createElement('div');
+        toast.className = 'premium-toast';
+        toast.innerHTML = `
+            <div class="toast-icon ${colorClass}"><i class="bi ${iconClass}"></i></div>
+            <div class="toast-content flex-grow-1">
+                <h6>${title}</h6>
+                <p>${message}</p>
+            </div>
+            <div class="toast-progress" style="background: ${progressColor}; animation-duration: ${duration}ms;"></div>
+        `;
+
+        container.appendChild(toast);
+
+        // Tự động xóa Toast khi thanh tiến trình chạy hết
+        setTimeout(() => {
+            toast.classList.add('hide');
+            setTimeout(() => toast.remove(), 400); // Đợi CSS trượt ra rồi mới xóa DOM
+        }, duration);
+    };
 </script>
 </body>
 </html>
