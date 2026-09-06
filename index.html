@@ -1686,6 +1686,12 @@ document.addEventListener('hidden.bs.modal', function () {
                 let mRole = document.querySelector('#teacherModernSidebar .sidebar-user-info .text-muted');
                 if(mRole) mRole.innerText = res.id === 'ADMIN' ? 'Giáo viên quản trị' : 'Trợ giảng';
                 
+                // --- BẢO MẬT: TỊCH THU NÚT TẠO NHÂN SỰ NẾU LÀ TRỢ GIẢNG ---
+                let btnAddStaff = document.getElementById('menu-add-staff');
+                if(btnAddStaff) {
+                    btnAddStaff.style.display = (res.id === 'ADMIN') ? 'flex' : 'none';
+                }
+
                 loadTeacherData();
               } 
               // NGÃ 2: GIÁO VIÊN ĐỘC LẬP -> VÀO GIAO DIỆN HOÀN TOÀN MỚI
@@ -1717,8 +1723,16 @@ document.addEventListener('hidden.bs.modal', function () {
       if(session.role === 'ADMIN') { 
           document.getElementById('login-container').style.display='none'; 
           document.getElementById('teacher-dashboard').style.display='block'; 
+          
           let tGreet = document.querySelector('#teacher-dashboard .modern-greeting h2');
           if(tGreet) tGreet.innerHTML = session.id === 'ADMIN' ? `Chào thầy, Dương Nguyên Khoa 👋` : `Chào Trợ giảng, ${tName} 👋`;
+          
+          // --- BẢO MẬT: TỊCH THU NÚT TẠO NHÂN SỰ NẾU LÀ TRỢ GIẢNG (KHI F5 TẢI LẠI TRANG) ---
+          let btnAddStaff = document.getElementById('menu-add-staff');
+          if(btnAddStaff) {
+              btnAddStaff.style.display = (session.id === 'ADMIN') ? 'flex' : 'none';
+          }
+
           loadTeacherData(); 
       } else if (session.role === 'INDEP_TEACHER') {
           document.getElementById('login-container').style.display='none'; 
@@ -1757,10 +1771,82 @@ document.addEventListener('hidden.bs.modal', function () {
             btn.innerHTML = '<i class="bi bi-floppy-fill me-1"></i> TẠO TÀI KHOẢN'; btn.disabled = false;
             if(res.success) {
                 bootstrap.Modal.getInstance(document.getElementById('addStaffModal')).hide();
-                Swal.fire('Thành công!', `Tài khoản <b>${roleName}</b> đã được tạo.<br>Mã đăng nhập: <b>${finalId}</b><br>Mật khẩu: <b>${pass}</b>`, 'success');
+                
+                // --- BẢNG THÔNG BÁO TẠO THÀNH CÔNG CAO CẤP ---
+                Swal.fire({
+                    width: '500px', 
+                    background: '#ffffff url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'2\' cy=\'2\' r=\'1.5\' fill=\'%23004494\' fill-opacity=\'0.05\'/%3E%3C/svg%3E")',
+                    html: `
+                        <!-- Dải viền màu Xanh - Đỏ ở mép trên cùng -->
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 16px; background: linear-gradient(to right, #004494 0%, #004494 30%, #dc3545 30%, #dc3545 55%, #004494 55%, #004494 100%);"></div>
+
+                        <div class="mt-4 mb-2 position-relative" style="z-index: 1;">
+                            <h3 class="fw-bold mb-4 mt-2" style="background: linear-gradient(90deg, #004494, #dc3545); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px;">
+                                🎉 TẠO THÀNH CÔNG! ✨
+                            </h3>
+                            
+                            <div class="text-start px-4 py-4 rounded-4 shadow-sm mx-auto position-relative bg-white" 
+                                 style="max-width: 420px; border: 2px dashed #cbd5e1; overflow: hidden;">
+                                
+                                <!-- Logo mờ (Watermark) chìm dưới nền thẻ -->
+                                <i class="bi bi-person-vcard-fill position-absolute text-primary" style="font-size: 9rem; opacity: 0.04; right: -25px; bottom: -30px; z-index: 0;"></i>
+                                
+                                <table class="table table-borderless mb-0 position-relative" style="z-index: 1;">
+                                    <tr>
+                                        <td class="text-muted fw-bold align-middle" style="width: 130px; padding: 14px 0;">
+                                            <i class="bi bi-person-circle text-primary me-2 fs-5"></i>Họ và tên:
+                                        </td>
+                                        <td class="align-middle" style="padding: 14px 0;">
+                                            <b class="text-primary fs-5" style="letter-spacing: 0.5px;">${name}</b>
+                                        </td>
+                                    </tr>
+                                    <tr style="border-top: 1px dashed #e2e8f0;">
+                                        <td class="text-muted fw-bold align-middle" style="padding: 14px 0;">
+                                            <i class="bi bi-diagram-3-fill text-secondary me-2 fs-5"></i>Vai trò:
+                                        </td>
+                                        <td class="align-middle" style="padding: 14px 0;">
+                                            <b class="text-secondary fs-6 shadow-sm" style="letter-spacing: 1px; background: #f1f5f9; padding: 6px 14px; border-radius: 8px;">${roleName}</b>
+                                        </td>
+                                    </tr>
+                                    <tr style="border-top: 1px dashed #e2e8f0;">
+                                        <td class="text-muted fw-bold align-middle" style="padding: 14px 0;">
+                                            <i class="bi bi-person-vcard-fill text-danger me-2 fs-5"></i>Tài khoản:
+                                        </td>
+                                        <td class="align-middle" style="padding: 14px 0;">
+                                            <b class="text-danger fs-5 shadow-sm" style="user-select: all; letter-spacing: 1px; background: #fee2e2; padding: 6px 14px; border-radius: 8px;">${finalId}</b>
+                                        </td>
+                                    </tr>
+                                    <tr style="border-top: 1px dashed #e2e8f0;">
+                                        <td class="text-muted fw-bold align-middle" style="padding: 14px 0;">
+                                            <i class="bi bi-key-fill text-success me-2 fs-5"></i>Mật khẩu:
+                                        </td>
+                                        <td class="align-middle" style="padding: 14px 0;">
+                                            <b class="text-success fs-5 shadow-sm" style="user-select: all; letter-spacing: 1px; background: #dcfce7; padding: 6px 14px; border-radius: 8px;">${pass}</b>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <div class="mt-4 p-3 bg-white rounded-4 border border-info border-opacity-25 d-inline-block shadow-sm" style="max-width: 420px; width: 100%;">
+                                <p class="text-secondary small mb-0 fw-bold">
+                                    <i class="bi bi-lightbulb-fill text-warning fs-5 me-1"></i> 
+                                    Mẹo: Nhấp đúp chuột vào viền màu để Copy nhanh!
+                                </p>
+                            </div>
+                        </div>
+                    `,
+                    showConfirmButton: true,
+                    showCloseButton: false,
+                    confirmButtonText: '<i class="bi bi-check2-circle me-1"></i> Hoàn tất',
+                    confirmButtonColor: '#004494',
+                    allowOutsideClick: false,
+                    customClass: { 
+                        popup: 'rounded-4 shadow-lg border-0 overflow-hidden',
+                        confirmButton: 'btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-sm mt-3'
+                    }
+                });
             } else { Swal.fire('Lỗi tạo tài khoản', res.message, 'error'); }
-        }).addNewStudentServer(finalId, name, roleName, pass); // Dùng lại hàm API tạo học sinh để tạo nhân sự
-    }
+        }).addNewStudentServer(finalId, name, roleName, pass);
 
 function logout() { 
     // Xóa bộ nhớ đăng nhập
@@ -4634,8 +4720,7 @@ window.previewTeacherExam = function(examId, durationMins) {
     <div class="sidebar-section-title sidebar-text mt-3">KHẢO THÍ & HỆ THỐNG</div>
     <div class="sidebar-menu">
         <button class="sidebar-item" onclick="toggleTeacherSidebar(); openExamManagerModal();" title="Quản lý kì thi"><i class="bi bi-gear"></i> <span class="sidebar-text">QUẢN LÝ KÌ THI</span></button>
-        <button class="sidebar-item" onclick="toggleTeacherSidebar(); new bootstrap.Modal(document.getElementById('addStaffModal')).show();" title="Cấp tài khoản Nhân sự"><i class="bi bi-person-lines-fill"></i> <span class="sidebar-text">Cấp TK Nhân sự</span></button>
-        <button class="sidebar-item" onclick="toggleTeacherSidebar(); loadTeacherData();" title="Cập nhật dữ liệu"><i class="bi bi-arrow-clockwise"></i> <span class="sidebar-text">Cập Nhật Dữ Liệu</span></button>
+        <button class="sidebar-item" id="menu-add-staff" onclick="toggleTeacherSidebar(); new bootstrap.Modal(document.getElementById('addStaffModal')).show();" title="Cấp tài khoản Nhân sự"><i class="bi bi-person-lines-fill"></i> <span class="sidebar-text">Cấp TK Nhân sự</span></button>        <button class="sidebar-item" onclick="toggleTeacherSidebar(); loadTeacherData();" title="Cập nhật dữ liệu"><i class="bi bi-arrow-clockwise"></i> <span class="sidebar-text">Cập Nhật Dữ Liệu</span></button>
     </div>
 
     <div class="sidebar-footer">
