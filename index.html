@@ -27,24 +27,66 @@
         --text-main: #1e293b;
         --text-sub: #64748b;
         --border-color: #e2e8f0;
+        --primary-accent: #0d6efd;
     }
     
     body.dark-theme {
-        --bg-main: #0f172a;
-        --bg-card: #1e293b;
-        --text-main: #f1f5f9;
-        --text-sub: #94a3b8;
-        --border-color: #334155;
+        --bg-main: #0f172a;       /* Nền đen sâu */
+        --bg-card: #1e293b;       /* Nền thẻ xám đậm */
+        --text-main: #f8fafc;     /* Chữ trắng sáng */
+        --text-sub: #cbd5e1;      /* Chữ phụ xám sáng */
+        --border-color: #334155;  /* Viền xám mờ */
+        --primary-accent: #38bdf8;/* Màu xanh lơ phát sáng cho điểm nhấn */
     }
 
-    /* Ép màu nền và chữ theo biến môi trường */
+    /* Ép màu nền và chữ tổng thể */
     body { background-color: var(--bg-main) !important; color: var(--text-main) !important; transition: background-color 0.3s ease, color 0.3s ease; }
-    body.dark-theme .bg-white, body.dark-theme .bg-light, body.dark-theme .saas-stat-card, body.dark-theme .modern-sidebar, body.dark-theme .modal-content {
-        background-color: var(--bg-card) !important; border-color: var(--border-color) !important; color: var(--text-main) !important;
-    }
-    body.dark-theme .text-dark, body.dark-theme .text-primary { color: var(--text-main) !important; }
-    body.dark-theme .text-muted { color: var(--text-sub) !important; }
     
+    /* Xử lý toàn bộ Thẻ, Menu, Bảng biểu, Popup */
+    body.dark-theme .bg-white, body.dark-theme .bg-light, 
+    body.dark-theme .saas-stat-card, body.dark-theme .modern-sidebar, 
+    body.dark-theme .modal-content, body.dark-theme .table-teacher,
+    body.dark-theme .tracking-card {
+        background-color: var(--bg-card) !important; 
+        border-color: var(--border-color) !important; 
+        color: var(--text-main) !important;
+    }
+
+    /* Cứu các màu chữ bị chìm (Ghi đè Bootstrap) */
+    body.dark-theme h1, body.dark-theme h2, body.dark-theme h3, body.dark-theme h4, body.dark-theme h5, body.dark-theme h6,
+    body.dark-theme .text-dark { color: var(--text-main) !important; }
+    body.dark-theme .text-primary { color: var(--primary-accent) !important; }
+    body.dark-theme .text-muted, body.dark-theme .sidebar-section-title { color: var(--text-sub) !important; }
+
+    /* Fix lỗi chữ chìm trong các con số Thống kê */
+    body.dark-theme .saas-stat-card .saas-stat-number, 
+    body.dark-theme .saas-stat-card .saas-stat-header { color: var(--text-main) !important; }
+
+    /* Fix lỗi Menu Sidebar bị chìm */
+    body.dark-theme .sidebar-item { color: var(--text-main); }
+    body.dark-theme .sidebar-item i { color: var(--text-sub); }
+    body.dark-theme .sidebar-item:hover { background: #334155; color: var(--primary-accent); }
+    body.dark-theme .sidebar-item:hover i { color: var(--primary-accent); }
+    body.dark-theme .premium-checkbox { color: var(--text-main) !important; }
+
+    /* Fix lỗi Khung nhập liệu, Select, Tìm kiếm (Form Controls) */
+    body.dark-theme .form-control, body.dark-theme .form-select, body.dark-theme .sidebar-search input { 
+        background-color: var(--bg-main) !important; 
+        border-color: var(--border-color) !important; 
+        color: var(--text-main) !important; 
+    }
+    body.dark-theme .form-control::placeholder { color: var(--text-sub) !important; }
+    body.dark-theme .input-group-text { background-color: var(--bg-card) !important; border-color: var(--border-color) !important; color: var(--text-main) !important; }
+
+    /* Fix Khung Đăng Nhập (Floating Label) */
+    body.dark-theme .saas-input-group { background: rgba(30, 41, 59, 0.8); border-color: var(--border-color); }
+    body.dark-theme .saas-input-group input { color: var(--text-main) !important; }
+    body.dark-theme .saas-input-group label { color: var(--text-sub) !important; }
+    body.dark-theme .saas-input-group input:focus ~ label,
+    body.dark-theme .saas-input-group input:not(:placeholder-shown) ~ label { color: var(--primary-accent) !important; font-weight: 800; }
+    body.dark-theme .saas-input-group i { color: var(--text-sub); }
+    body.dark-theme .saas-input-group:focus-within i { color: var(--primary-accent); }
+
     /* Công tắc Neumorphism Sáng/Tối */
     .premium-theme-switch {
         position: relative; width: 64px; height: 32px; background: #e2e8f0; border-radius: 16px;
