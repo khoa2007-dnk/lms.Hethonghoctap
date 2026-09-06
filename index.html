@@ -1659,30 +1659,75 @@ document.addEventListener('hidden.bs.modal', function () {
 // HỆ THỐNG ĐĂNG NHẬP & PHÂN QUYỀN VÀ BẢNG ĐIỀU KHIỂN
 // ===================================================================
 function login() {
-  const u = document.getElementById('user').value, p = document.getElementById('pass').value, btn = document.getElementById('loginBtn');
-  if(!u) return Swal.fire('Nhắc nhở', 'Vui lòng nhập mã số!', 'warning');
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang truy cập...'; btn.disabled = true;
-  try {
-    callAPI
-    .withFailureHandler(err => { btn.innerHTML = 'TRUY CẬP'; btn.disabled = false; Swal.fire('Lỗi Mạng/Hệ thống', err.message, 'error'); })
-    .withSuccessHandler(res => {
-        btn.innerHTML = 'TRUY CẬP'; btn.disabled = false;
-        if(res.success) { 
-          if(res.id === 'ADMIN') {
-            localStorage.setItem('lms_session', JSON.stringify({role:'ADMIN'})); 
-            document.getElementById('login-container').style.display = 'none'; document.getElementById('teacher-dashboard').style.display = 'block'; loadTeacherData();
-          } else {
-            localStorage.setItem('lms_session', JSON.stringify({role:'STUDENT', id:res.id, name:res.name})); 
-            currentStudentId = res.id; currentStudentName = res.name;
-            document.getElementById('login-container').style.display = 'none'; document.getElementById('dashboard').style.display = 'block';
-            document.getElementById('welcome-msg').innerHTML = `<div class="mt-3"><span style="font-size:1.4rem; color:#e0f7fa;">🎉 Xin chào, </span><span class="text-warning fw-bold" style="font-size:2rem; text-transform:uppercase;">${currentStudentName}</span>! ✨</div>`;
-            loadLessons(); 
-            startExamStatusMonitor()
-          }
-        } else { Swal.fire('Lỗi', res.message, 'error'); }
-    }).verifyLogin(u, p);
-  } catch (err) { btn.innerHTML = 'TRUY CẬP'; btn.disabled = false; Swal.fire('Lỗi Trình Duyệt', err.message, 'error'); }
-}
+      const u = document.getElementById('user').value, p = document.getElementById('pass').value, btn = document.getElementById('loginBtn');
+      if(!u) return Swal.fire('Nhắc nhở', 'Vui lòng nhập mã số!', 'warning');
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang truy cập...'; btn.disabled = true;
+      try {
+        callAPI
+        .withFailureHandler(err => { btn.innerHTML = 'TRUY CẬP'; btn.disabled = false; Swal.fire('Lỗi Mạng/Hệ thống', err.message, 'error'); })
+        .withSuccessHandler(res => {
+            btn.innerHTML = 'TRUY CẬP'; btn.disabled = false;
+            if(res.success) { 
+              // ĐÃ NÂNG CẤP: Chấp nhận ID là ADMIN hoặc bắt đầu bằng GV
+              if(res.id === 'ADMIN' || res.id.toString().toUpperCase().startsWith('GV')) {
+                let tName = res.name || 'Dương Nguyên Khoa'; // Mặc định là tên thầy nếu là ADMIN gốc
+                localStorage.setItem('lms_session', JSON.stringify({role:'ADMIN', id: res.id, name: tName})); 
+                document.getElementById('login-container').style.display = 'none'; 
+                document.getElementById('teacher-dashboard').style.display = 'block'; 
+                
+                // Đổi tên Lời chào & Menu tự động theo Giáo viên đăng nhập
+                let tGreet = document.querySelector('#teacher-dashboard .modern-greeting h2');
+                if(tGreet) tGreet.innerHTML = `Chào thầy/cô, ${tName} 👋`;
+                let mName = document.querySelector('#teacherModernSidebar .sidebar-user-info .fw-bold');
+                if(mName) mName.innerText = tName;
+                let mAvatar = document.querySelector('#teacherModernSidebar .sidebar-avatar');
+                if(mAvatar) {
+                    let names = tName.split(' ');
+                    mAvatar.innerText = names[names.length-1].charAt(0).toUpperCase();
+                }
+                
+                loadTeacherData();
+              } else {
+                localStorage.setItem('lms_session', JSON.stringify({role:'STUDENT', id:res.id, name:res.name})); 
+                currentStudentId = res.id; currentStudentName = res.name;
+                document.getElementById('login-container').style.display = 'none'; document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('welcome-msg').innerHTML = `<div class="mt-3"><span style="font-size:1.4rem; color:#e0f7fa;">🎉 Xin chào, </span><span class="text-warning fw-bold" style="font-size:2rem; text-transform:uppercase;">${currentStudentName}</span>! ✨</div>`;
+                loadLessons(); 
+                startExamStatusMonitor();
+              }
+            } else { Swal.fire('Lỗi', res.message, 'error'); }
+        }).verifyLogin(u, p);
+      } catch (err) { btn.innerHTML = 'TRUY CẬP'; btn.disabled = false; Swal.fire('Lỗi Trình Duyệt', err.message, 'error'); }
+    }
+
+    window.onload = function() { 
+      document.addEventListener('focusin', (e) => { if (e.target.closest(".swal2-container")) { e.stopImmediatePropagation(); } });
+      const session = JSON.parse(localStorage.getItem('lms_session')); 
+      if(!session) return; 
+      
+      if(session.role === 'ADMIN') { 
+          document.getElementById('login-container').style.display='none'; 
+          document.getElementById('teacher-dashboard').style.display='block'; 
+          
+          // Phục hồi tên hiển thị nếu F5 tải lại trang
+          let tName = session.name || 'Dương Nguyên Khoa';
+          let tGreet = document.querySelector('#teacher-dashboard .modern-greeting h2');
+          if(tGreet) tGreet.innerHTML = `Chào thầy/cô, ${tName} 👋`;
+          let mName = document.querySelector('#teacherModernSidebar .sidebar-user-info .fw-bold');
+          if(mName) mName.innerText = tName;
+          let mAvatar = document.querySelector('#teacherModernSidebar .sidebar-avatar');
+          if(mAvatar) { let names = tName.split(' '); mAvatar.innerText = names[names.length-1].charAt(0).toUpperCase(); }
+          
+          loadTeacherData(); 
+      } else { 
+          currentStudentId = session.id; currentStudentName = session.name; 
+          document.getElementById('login-container').style.display='none'; 
+          document.getElementById('dashboard').style.display='block'; 
+          document.getElementById('welcome-msg').innerHTML = `<div class="mt-3"><span style="font-size:1.4rem; color:#e0f7fa;">🎉 Xin chào, </span><span class="text-warning fw-bold" style="font-size:2rem; text-transform:uppercase;">${currentStudentName}</span>! ✨</div>`; 
+          loadLessons(); 
+          startExamStatusMonitor(); 
+      }
+    };
 
 function logout() { 
     // Xóa bộ nhớ đăng nhập
@@ -1714,12 +1759,6 @@ function logout() {
     if (studentSidebar) studentSidebar.classList.remove('show');
     if (studentOverlay) studentOverlay.classList.remove('show');
 }
-
-window.onload = function() { 
-  document.addEventListener('focusin', (e) => { if (e.target.closest(".swal2-container")) { e.stopImmediatePropagation(); } });
-  const session = JSON.parse(localStorage.getItem('lms_session')); if(!session) return; if(session.role === 'ADMIN') { document.getElementById('login-container').style.display='none'; document.getElementById('teacher-dashboard').style.display='block'; loadTeacherData(); } else { currentStudentId = session.id; currentStudentName = session.name; document.getElementById('login-container').style.display='none'; document.getElementById('dashboard').style.display='block'; document.getElementById('welcome-msg').innerHTML = `<div class="mt-3"><span style="font-size:1.4rem; color:#e0f7fa;">🎉 Xin chào, </span><span class="text-warning fw-bold" style="font-size:2rem; text-transform:uppercase;">${currentStudentName}</span>! ✨</div>`; loadLessons(); startExamStatusMonitor() }
-  startExamStatusMonitor();  
-};
 
 // ===================================================================
 // CHỨC NĂNG GIAO BÀI (GIÁO VIÊN)
