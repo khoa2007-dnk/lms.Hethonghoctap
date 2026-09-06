@@ -2429,8 +2429,9 @@ function renderStudentList() {
 
     container.innerHTML += `
     <div class="col-md-6 col-lg-4">
-        <div class="card h-100 p-3 shadow-sm border-0 rounded-4" style="cursor:pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'" onclick="viewStudentDetail('${s.id}')">
-            <div class="d-flex justify-content-between align-items-start mb-2">
+        <label class="premium-checkbox card h-100 p-3 shadow-sm border-0 rounded-4 m-0 w-100" style="cursor:pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'" onclick="viewStudentDetail('${s.id}')">
+             <!-- Vẫn giữ chức năng Xóa tài khoản, nhưng không dùng checkbox ở đây -->
+             <div class="d-flex justify-content-between align-items-start mb-2 w-100">
                 <div>
                     <h6 class="fw-bold text-primary mb-1 d-flex align-items-center flex-wrap gap-1">
                         <span class="text-truncate" style="max-width: 130px;">${s.name}</span> 
@@ -2440,12 +2441,12 @@ function renderStudentList() {
                 </div>
                 <div class="text-end">
                     <span class="badge bg-light text-dark border border-secondary shadow-sm py-1 px-2 mb-1 d-block">Khối ${s.grade}</span>
-                    <button class="btn btn-sm btn-outline-danger py-0 px-2 fw-bold" style="font-size: 0.7rem;" onclick="event.stopPropagation(); confirmDeleteStudent('${s.id}', '${s.name}')"><i class="bi bi-trash-fill"></i> Xóa</button>
+                    <button class="btn btn-sm btn-outline-danger py-0 px-2 fw-bold position-relative" style="font-size: 0.7rem; z-index: 2;" onclick="event.stopPropagation(); confirmDeleteStudent('${s.id}', '${s.name}')"><i class="bi bi-trash-fill"></i> Xóa</button>
                 </div>
             </div>
-            <div class="d-flex justify-content-between small mb-1 mt-2"><span class="text-secondary fw-bold">Tiến độ nộp bài:</span><span class="fw-bold text-dark fs-6">${s.submitted} / ${s.assigned}</span></div>
-            <div class="progress shadow-sm" style="height: 8px; border-radius: 10px;"><div class="progress-bar ${progressColor}" style="width: ${progressPercent}%"></div></div>
-        </div>
+            <div class="d-flex justify-content-between small mb-1 mt-2 w-100"><span class="text-secondary fw-bold">Tiến độ nộp bài:</span><span class="fw-bold text-dark fs-6">${s.submitted} / ${s.assigned}</span></div>
+            <div class="progress shadow-sm w-100" style="height: 8px; border-radius: 10px;"><div class="progress-bar ${progressColor}" style="width: ${progressPercent}%"></div></div>
+        </label>
     </div>`; 
   });
 }
