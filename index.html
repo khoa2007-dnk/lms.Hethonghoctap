@@ -2988,26 +2988,44 @@ function renderMultiExamList(list) {
 }
 
 function openMultiExamForm(examId) {
-    document.getElementById('multi-exam-list-view').style.display = 'none'; document.getElementById('multi-exam-form-view').style.display = 'block';
+    document.getElementById('multi-exam-list-view').style.display = 'none'; 
+    document.getElementById('multi-exam-form-view').style.display = 'block';
     if (examId === 'NEW') {
         document.getElementById('form-view-title').innerText = "TẠO KỲ THI MỚI";
-        document.getElementById("editingExamId").value = "NEW"; document.getElementById("examTitle").value = ""; document.getElementById("examSubject").value = "";
-        document.getElementById("examQuestions").value = 40; document.getElementById("examDuration").value = 90;
-        document.getElementById("examTargetType").value = "ALL"; document.getElementById("examTargetIds").value = "";
-        document.getElementById("examLatex").value = ""; document.getElementById("examLatex").disabled = false;
-        if (typeof  === 'function') ();
+        document.getElementById("editingExamId").value = "NEW"; 
+        document.getElementById("examTitle").value = ""; 
+        document.getElementById("examSubject").value = "";
+        document.getElementById("examQuestions").value = 40; 
+        document.getElementById("examDuration").value = 90;
+        document.getElementById("examTargetType").value = "ALL"; 
+        document.getElementById("examTargetIds").value = "";
+        document.getElementById("examLatex").value = ""; 
+        document.getElementById("examLatex").disabled = false;
+        
+        /* Đã vá lỗi Syntax: Thêm toggleTargetIds */
+        if (typeof toggleTargetIds === 'function') toggleTargetIds();
     } else {
         document.getElementById('form-view-title').innerText = "CẬP NHẬT KỲ THI";
         let ex = window.multiExamData.find(e => e.id === examId);
         if(ex) {
-            document.getElementById("editingExamId").value = ex.id; document.getElementById("examTitle").value = ex.examTitle || "";
-            document.getElementById("examSubject").value = ex.examSubject || ""; document.getElementById("examQuestions").value = ex.examQuestions || 40;
-            document.getElementById("examDuration").value = ex.examDuration || 90; document.getElementById("examTargetType").value = ex.targetType || "ALL";
+            document.getElementById("editingExamId").value = ex.id; 
+            document.getElementById("examTitle").value = ex.examTitle || "";
+            document.getElementById("examSubject").value = ex.examSubject || ""; 
+            document.getElementById("examQuestions").value = ex.examQuestions || 40;
+            document.getElementById("examDuration").value = ex.examDuration || 90; 
+            document.getElementById("examTargetType").value = ex.targetType || "ALL";
             document.getElementById("examTargetIds").value = (ex.targetType === "SINGLE" && ex.targetIds) ? ex.targetIds : "";
-            if (typeof  === 'function') ();
+            
+            /* Đã vá lỗi Syntax: Thêm toggleTargetIds */
+            if (typeof toggleTargetIds === 'function') toggleTargetIds();
+            
             let latexInput = document.getElementById("examLatex");
-            latexInput.value = "Đang tải mã LaTeX gốc từ máy chủ..."; latexInput.disabled = true; 
-            callAPI.then(function(res) { latexInput.disabled = false; latexInput.value = (res && res.success) ? res.latexCode : ""; }).getMultiExamForEdit(examId); 
+            latexInput.value = "Đang tải mã LaTeX gốc từ máy chủ..."; 
+            latexInput.disabled = true; 
+            callAPI.then(function(res) { 
+                latexInput.disabled = false; 
+                latexInput.value = (res && res.success) ? res.latexCode : ""; 
+            }).getMultiExamForEdit(examId); 
         }
     }
 }
