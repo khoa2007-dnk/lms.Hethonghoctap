@@ -19,6 +19,64 @@
   <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
   <style>
     /* =================================================================== */
+    /* PREMIUM INPUT UI: NHÃN NỔI CHO TRANG ĐĂNG NHẬP (SAAS LOGIN)         */
+    /* =================================================================== */
+    .saas-input-group {
+        position: relative;
+        background: rgba(255, 255, 255, 0.6); /* Nền trong suốt tiệp với thẻ kính */
+        border: 2px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 16px 16px 8px 45px; /* Chừa không gian bên trái cho Icon */
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+    .saas-input-group i {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.2rem;
+        color: #94a3b8;
+        transition: all 0.3s ease;
+    }
+    .saas-input-group:focus-within {
+        background: #ffffff;
+        border-color: #0d47a1;
+        box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.15);
+    }
+    .saas-input-group:focus-within i {
+        color: #0d47a1;
+    }
+    .saas-input-group input {
+        width: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 1.05rem;
+        padding-top: 8px;
+    }
+    .saas-input-group label {
+        position: absolute;
+        left: 45px;
+        top: 17px;
+        color: #64748b;
+        font-weight: 600;
+        font-size: 0.95rem;
+        pointer-events: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* Hiệu ứng nhấc nhãn lên khi nhấp vào hoặc khi đã có chữ */
+    .saas-input-group input:focus ~ label,
+    .saas-input-group input:not(:placeholder-shown) ~ label {
+        top: 6px;
+        font-size: 0.75rem;
+        color: #0d47a1;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+    }
+    /* =================================================================== */
     /* NÂNG CẤP GIAO DIỆN THEO PHONG CÁCH "SỔ GIA SƯ" (MINIMALIST UI)      */
     /* =================================================================== */
     /* 1. Lời chào thanh lịch */
@@ -475,9 +533,21 @@
       <div class="hcmue-color-bar"></div>
       <div class="p-4 text-center mt-3"><h2 class="fw-bold" style="color: #0d47a1;">HỆ THỐNG ĐĂNG NHẬP</h2></div>
       <div class="px-4 pb-4">
-        <div class="input-group mb-4"><span class="input-group-text"><i class="bi bi-person-badge"></i></span><input type="text" id="user" class="form-control p-2" placeholder="Mã số (HSxxx / GVxxx)"></div>
-        <div class="input-group mb-4"><span class="input-group-text"><i class="bi bi-key-fill"></i></span><input type="password" id="pass" class="form-control p-2" placeholder="Mật khẩu"></div>
-        <button class="btn-login" id="loginBtn" onclick="login()">TRUY CẬP</button>
+        <!-- Ô nhập Mã số -->
+        <div class="saas-input-group">
+            <i class="bi bi-person-badge"></i>
+            <input type="text" id="user" placeholder=" ">
+            <label for="user">Mã số (HSxxx / GVxxx)</label>
+        </div>
+        
+        <!-- Ô nhập Mật khẩu -->
+        <div class="saas-input-group mb-4">
+            <i class="bi bi-key-fill"></i>
+            <input type="password" id="pass" placeholder=" ">
+            <label for="pass">Mật khẩu</label>
+        </div>
+        
+        <button class="btn-login mt-2" id="loginBtn" onclick="login()">TRUY CẬP</button>
       </div>
       <div class="text-center py-3 text-muted small border-top fw-bold">Được tạo và quản lý bởi Dương Nguyên Khoa</div>
     </div>
