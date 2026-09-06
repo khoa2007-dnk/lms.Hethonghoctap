@@ -1656,9 +1656,9 @@ document.addEventListener('hidden.bs.modal', function () {
 });
 
 // ===================================================================
-// HỆ THỐNG ĐĂNG NHẬP & PHÂN QUYỀN VÀ BẢNG ĐIỀU KHIỂN
-// ===================================================================
-function login() {
+    // HỆ THỐNG ĐỊNH TUYẾN 3 NGÃ: ADMIN/TRỢ GIẢNG - GIÁO VIÊN - HỌC SINH
+    // ===================================================================
+    function login() {
       const u = document.getElementById('user').value, p = document.getElementById('pass').value, btn = document.getElementById('loginBtn');
       if(!u) return Swal.fire('Nhắc nhở', 'Vui lòng nhập mã số!', 'warning');
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang truy cập...'; btn.disabled = true;
@@ -1668,32 +1668,40 @@ function login() {
         .withSuccessHandler(res => {
             btn.innerHTML = 'TRUY CẬP'; btn.disabled = false;
             if(res.success) { 
-              // ĐÃ NÂNG CẤP: Chấp nhận ID là ADMIN hoặc bắt đầu bằng GV
-              if(res.id === 'ADMIN' || res.id.toString().toUpperCase().startsWith('GV')) {
-                let tName = res.name || 'Dương Nguyên Khoa'; // Mặc định là tên thầy nếu là ADMIN gốc
+              let upperId = res.id.toString().toUpperCase();
+              let tName = res.name || 'Hệ thống';
+              
+              // NGÃ 1: ADMIN HOẶC TRỢ GIẢNG -> VÀO CHUNG BẢNG QUẢN TRỊ
+              if(res.id === 'ADMIN' || upperId.startsWith('TG')) {
                 localStorage.setItem('lms_session', JSON.stringify({role:'ADMIN', id: res.id, name: tName})); 
                 document.getElementById('login-container').style.display = 'none'; 
                 document.getElementById('teacher-dashboard').style.display = 'block'; 
                 
-                // Đổi tên Lời chào & Menu tự động theo Giáo viên đăng nhập
                 let tGreet = document.querySelector('#teacher-dashboard .modern-greeting h2');
-                if(tGreet) tGreet.innerHTML = `Chào thầy/cô, ${tName} 👋`;
+                if(tGreet) tGreet.innerHTML = res.id === 'ADMIN' ? `Chào thầy, Dương Nguyên Khoa 👋` : `Chào Trợ giảng, ${tName} 👋`;
+                
                 let mName = document.querySelector('#teacherModernSidebar .sidebar-user-info .fw-bold');
-                if(mName) mName.innerText = tName;
-                let mAvatar = document.querySelector('#teacherModernSidebar .sidebar-avatar');
-                if(mAvatar) {
-                    let names = tName.split(' ');
-                    mAvatar.innerText = names[names.length-1].charAt(0).toUpperCase();
-                }
+                if(mName) mName.innerText = res.id === 'ADMIN' ? 'Dương Nguyên Khoa' : tName;
+                
+                let mRole = document.querySelector('#teacherModernSidebar .sidebar-user-info .text-muted');
+                if(mRole) mRole.innerText = res.id === 'ADMIN' ? 'Giáo viên quản trị' : 'Trợ giảng';
                 
                 loadTeacherData();
-              } else {
+              } 
+              // NGÃ 2: GIÁO VIÊN ĐỘC LẬP -> VÀO GIAO DIỆN HOÀN TOÀN MỚI
+              else if (upperId.startsWith('GV')) {
+                localStorage.setItem('lms_session', JSON.stringify({role:'INDEP_TEACHER', id: res.id, name: tName})); 
+                document.getElementById('login-container').style.display = 'none'; 
+                document.getElementById('independent-teacher-dashboard').style.display = 'block';
+                document.getElementById('indep-greet-name').innerHTML = `Chào thầy/cô, ${tName} 👋`;
+              }
+              // NGÃ 3: HỌC SINH -> VÀO GÓC HỌC TẬP
+              else {
                 localStorage.setItem('lms_session', JSON.stringify({role:'STUDENT', id:res.id, name:res.name})); 
                 currentStudentId = res.id; currentStudentName = res.name;
                 document.getElementById('login-container').style.display = 'none'; document.getElementById('dashboard').style.display = 'block';
                 document.getElementById('welcome-msg').innerHTML = `<div class="mt-3"><span style="font-size:1.4rem; color:#e0f7fa;">🎉 Xin chào, </span><span class="text-warning fw-bold" style="font-size:2rem; text-transform:uppercase;">${currentStudentName}</span>! ✨</div>`;
-                loadLessons(); 
-                startExamStatusMonitor();
+                loadLessons(); startExamStatusMonitor();
               }
             } else { Swal.fire('Lỗi', res.message, 'error'); }
         }).verifyLogin(u, p);
@@ -1705,29 +1713,54 @@ function login() {
       const session = JSON.parse(localStorage.getItem('lms_session')); 
       if(!session) return; 
       
+      let tName = session.name || 'Hệ thống';
       if(session.role === 'ADMIN') { 
           document.getElementById('login-container').style.display='none'; 
           document.getElementById('teacher-dashboard').style.display='block'; 
-          
-          // Phục hồi tên hiển thị nếu F5 tải lại trang
-          let tName = session.name || 'Dương Nguyên Khoa';
           let tGreet = document.querySelector('#teacher-dashboard .modern-greeting h2');
-          if(tGreet) tGreet.innerHTML = `Chào thầy/cô, ${tName} 👋`;
-          let mName = document.querySelector('#teacherModernSidebar .sidebar-user-info .fw-bold');
-          if(mName) mName.innerText = tName;
-          let mAvatar = document.querySelector('#teacherModernSidebar .sidebar-avatar');
-          if(mAvatar) { let names = tName.split(' '); mAvatar.innerText = names[names.length-1].charAt(0).toUpperCase(); }
-          
+          if(tGreet) tGreet.innerHTML = session.id === 'ADMIN' ? `Chào thầy, Dương Nguyên Khoa 👋` : `Chào Trợ giảng, ${tName} 👋`;
           loadTeacherData(); 
+      } else if (session.role === 'INDEP_TEACHER') {
+          document.getElementById('login-container').style.display='none'; 
+          document.getElementById('independent-teacher-dashboard').style.display='block';
+          document.getElementById('indep-greet-name').innerHTML = `Chào thầy/cô, ${tName} 👋`;
       } else { 
           currentStudentId = session.id; currentStudentName = session.name; 
           document.getElementById('login-container').style.display='none'; 
           document.getElementById('dashboard').style.display='block'; 
           document.getElementById('welcome-msg').innerHTML = `<div class="mt-3"><span style="font-size:1.4rem; color:#e0f7fa;">🎉 Xin chào, </span><span class="text-warning fw-bold" style="font-size:2rem; text-transform:uppercase;">${currentStudentName}</span>! ✨</div>`; 
-          loadLessons(); 
-          startExamStatusMonitor(); 
+          loadLessons(); startExamStatusMonitor(); 
       }
     };
+
+    // Hàm đổi chữ tiền tố khi chọn Role
+    function updateStaffPrefix() {
+        document.getElementById('staff-prefix-addon').innerText = document.getElementById('new-staff-role').value;
+    }
+
+    // Hàm thực thi tạo Tài khoản nhân sự
+    function execAddStaff() {
+        let prefix = document.getElementById('new-staff-role').value;
+        let suffix = document.getElementById('new-staff-id').value.trim();
+        let name = document.getElementById('new-staff-name').value.trim();
+        let pass = document.getElementById('new-staff-pass').value.trim();
+        
+        if(!suffix || !name || !pass) return Swal.fire('Nhắc nhở', 'Vui lòng điền đủ thông tin!', 'warning');
+        
+        let finalId = prefix + suffix; 
+        let roleName = prefix === 'TG' ? 'Trợ giảng' : 'Giáo viên'; // Lưu Role vào cột Khối lớp trên Google Sheet
+
+        let btn = document.getElementById('btn-save-staff');
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang tạo...'; btn.disabled = true;
+
+        callAPI.withSuccessHandler(res => {
+            btn.innerHTML = '<i class="bi bi-floppy-fill me-1"></i> TẠO TÀI KHOẢN'; btn.disabled = false;
+            if(res.success) {
+                bootstrap.Modal.getInstance(document.getElementById('addStaffModal')).hide();
+                Swal.fire('Thành công!', `Tài khoản <b>${roleName}</b> đã được tạo.<br>Mã đăng nhập: <b>${finalId}</b><br>Mật khẩu: <b>${pass}</b>`, 'success');
+            } else { Swal.fire('Lỗi tạo tài khoản', res.message, 'error'); }
+        }).addNewStudentServer(finalId, name, roleName, pass); // Dùng lại hàm API tạo học sinh để tạo nhân sự
+    }
 
 function logout() { 
     // Xóa bộ nhớ đăng nhập
@@ -4601,6 +4634,7 @@ window.previewTeacherExam = function(examId, durationMins) {
     <div class="sidebar-section-title sidebar-text mt-3">KHẢO THÍ & HỆ THỐNG</div>
     <div class="sidebar-menu">
         <button class="sidebar-item" onclick="toggleTeacherSidebar(); openExamManagerModal();" title="Quản lý kì thi"><i class="bi bi-gear"></i> <span class="sidebar-text">QUẢN LÝ KÌ THI</span></button>
+        <button class="sidebar-item" onclick="toggleTeacherSidebar(); new bootstrap.Modal(document.getElementById('addStaffModal')).show();" title="Cấp tài khoản Nhân sự"><i class="bi bi-person-lines-fill"></i> <span class="sidebar-text">Cấp TK Nhân sự</span></button>
         <button class="sidebar-item" onclick="toggleTeacherSidebar(); loadTeacherData();" title="Cập nhật dữ liệu"><i class="bi bi-arrow-clockwise"></i> <span class="sidebar-text">Cập Nhật Dữ Liệu</span></button>
     </div>
 
@@ -4984,5 +5018,66 @@ window.openExamTrackingModal = function(examTitle, isGraded) {
         }, duration);
     };
 </script>
+<!-- =================================================================== -->
+  <!-- MÀN HÌNH GIÁO VIÊN ĐỘC LẬP (KHÔNG GIAN LÀM VIỆC MỚI HOÀN TOÀN)      -->
+  <!-- =================================================================== -->
+  <div id="independent-teacher-dashboard" style="display: none; position: relative; z-index: 10; min-height: 100vh;">
+      <div class="container-fluid px-4 pt-5 pb-2" style="max-width: 1400px;">
+          <div class="modern-greeting d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+              <div>
+                  <h2 class="fw-bold" style="color: #1e293b; font-size: 1.8rem;" id="indep-greet-name">Chào thầy/cô 👋</h2>
+                  <p style="color: #64748b; font-weight: 500;">Không gian làm việc độc lập của bạn.</p>
+              </div>
+              <button class="btn btn-outline-danger fw-bold rounded-pill shadow-sm bg-white px-4 py-2" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Thoát</button>
+          </div>
+          <div class="alert alert-success border-success shadow-sm rounded-4 p-4 text-center mt-5">
+              <i class="bi bi-rocket-takeoff-fill text-success d-block mb-3" style="font-size: 4rem;"></i>
+              <h3 class="fw-bold text-success">Giao diện đang được xây dựng!</h3>
+              <p class="text-dark">Đây là phân khu độc lập hoàn toàn, không liên quan đến dữ liệu của ADMIN.<br>Hệ thống chức năng riêng sẽ được cập nhật trong phiên bản tiếp theo.</p>
+          </div>
+      </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- MODAL: CẤP TÀI KHOẢN NHÂN SỰ (TRỢ GIẢNG / GIÁO VIÊN)                -->
+  <!-- =================================================================== -->
+  <div class="modal fade" id="addStaffModal" tabindex="-1" style="z-index: 1060; backdrop-filter: blur(6px); background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="fw-bold mb-0"><i class="bi bi-person-lines-fill me-2 text-warning"></i>Cấp Tài Khoản Nhân Sự</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body bg-light p-4">
+          <div class="mb-3">
+            <label class="form-label fw-bold text-dark small"><i class="bi bi-diagram-3-fill text-primary"></i> Vai trò tài khoản</label>
+            <select id="new-staff-role" class="form-select border-dark shadow-sm fw-bold text-primary" onchange="updateStaffPrefix()">
+                <option value="TG">Trợ giảng (Dùng chung dữ liệu ADMIN)</option>
+                <option value="GV">Giáo viên (Hệ thống độc lập hoàn toàn)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-dark small">Mã đăng nhập (Tự động thêm tiền tố)</label>
+            <div class="input-group shadow-sm">
+                <span class="input-group-text bg-dark text-warning fw-bold border-dark" id="staff-prefix-addon">TG</span>
+                <input type="text" id="new-staff-id" class="form-control border-dark fw-bold text-danger" placeholder="001, NGOC, ...">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-dark small">Họ và Tên</label>
+            <input type="text" id="new-staff-name" class="form-control border-dark shadow-sm" placeholder="VD: Cô Bích Ngọc">
+          </div>
+          <div class="mb-3">
+              <label class="form-label fw-bold text-dark small">Mật khẩu mặc định</label>
+              <input type="text" id="new-staff-pass" class="form-control border-dark shadow-sm" value="123456">
+          </div>
+        </div>
+        <div class="modal-footer bg-white">
+          <button class="btn btn-secondary fw-bold rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+          <button class="btn btn-dark text-warning fw-bold rounded-pill px-4 shadow" id="btn-save-staff" onclick="execAddStaff()"><i class="bi bi-floppy-fill me-1"></i> TẠO TÀI KHOẢN</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
