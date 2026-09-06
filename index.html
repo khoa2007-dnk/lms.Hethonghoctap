@@ -597,6 +597,13 @@
             top: calc(15px + env(safe-area-inset-top)) !important;
         }
     }
+    /* =================================================================== */
+    /* VÁ LỖI: SIDEBAR CHE KHUẤT MODAL (BẢNG ĐIỂM, GIAO BÀI...)            */
+    /* =================================================================== */
+    /* Hạ lớp nổi của Sidebar xuống chuẩn Offcanvas để Modal đè lên trên   */
+    .modern-sidebar { z-index: 1045 !important; }
+    .sidebar-overlay { z-index: 1040 !important; }
+    .mobile-menu-btn { z-index: 1035 !important; }
   </style>
   <script>
     window.MathJax = {
