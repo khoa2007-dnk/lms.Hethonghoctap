@@ -3957,11 +3957,11 @@ function startRealExamSingle(examId, examTitle) {
         width: '500px', padding: '2rem', showConfirmButton: false, allowOutsideClick: false, background: '#ffffff',
         html: `
             <div class="text-center">
-                <!-- ĐÃ THAY THẾ ẢNH LỖI BẰNG ICON BẢO MẬT -->
-                <i class="bi bi-shield-lock-fill text-primary mb-3 d-block" style="font-size: 3.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));"></i>
-                <h4 class="text-primary fw-bold mb-3" style="text-transform: uppercase; letter-spacing: 1px;">ĐANG CHỜ PHÊ DUYỆT</h4>
-                <div class="spinner-border text-danger mb-4" style="width: 3.5rem; height: 3.5rem;" role="status"></div>
-                <p class="fs-5 text-dark fw-bold mb-2">Thầy Khoa đang xét duyệt cho em vào thi...</p>
+                <!-- Thêm ID cho icon và chữ để dễ dàng đổi màu khi được duyệt -->
+                <i class="bi bi-shield-lock-fill text-primary mb-3 d-block" id="swal-wait-icon" style="font-size: 3.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));"></i>
+                <h4 class="text-primary fw-bold mb-3" id="swal-wait-title" style="text-transform: uppercase; letter-spacing: 1px;">ĐANG CHỜ PHÊ DUYỆT</h4>
+                <div class="spinner-border text-danger mb-4" id="swal-wait-spinner" style="width: 3.5rem; height: 3.5rem;" role="status"></div>
+                <p class="fs-5 text-dark fw-bold mb-2" id="swal-wait-desc">Thầy Khoa đang xét duyệt cho em vào thi...</p>
                 <div class="alert alert-warning border-warning shadow-sm mb-0 p-2 mt-3" style="background-color: #fff9e6;">
                     <small class="fw-bold text-dark"><i class="bi bi-exclamation-triangle-fill text-danger me-1"></i> Em vui lòng giữ nguyên màn hình và chờ trong giây lát nhé!</small>
                 </div>
@@ -3972,12 +3972,29 @@ function startRealExamSingle(examId, examTitle) {
     
     // Gửi tín hiệu xin vào thi lên máy chủ
     callAPI.then(function() {
-        // Quét tự động 3 giây/lần xem giáo viên đã duyệt chưa
+        let isChecking = false; // Khóa chống kẹt mạng (Overlapping)
+        
+        // TĂNG TỐC ĐỘ QUÉT: 1.5 giây/lần thay vì 3 giây
         let checkInterval = setInterval(function() {
+            if (isChecking) return; // Nếu mạng lag, truy vấn trước chưa xong thì bỏ qua nhịp này
+            isChecking = true;
+            
             callAPI.then(function(statusRes) {
                 if (statusRes.status === 'APPROVED') {
                     clearInterval(checkInterval);
-                    // Lấy đề thi từ máy chủ sau khi được duyệt
+                    
+                    // 1. CẬP NHẬT GIAO DIỆN NGAY LẬP TỨC ĐỂ HỌC SINH KHÔNG SỐT RUỘT
+                    let titleEl = document.getElementById('swal-wait-title');
+                    let descEl = document.getElementById('swal-wait-desc');
+                    let spinnerEl = document.getElementById('swal-wait-spinner');
+                    let iconEl = document.getElementById('swal-wait-icon');
+                    
+                    if(titleEl) { titleEl.innerText = "ĐÃ ĐƯỢC PHÊ DUYỆT!"; titleEl.className = "text-success fw-bold mb-3"; }
+                    if(descEl) descEl.innerText = "Đang tải dữ liệu đề thi, chuẩn bị vào phòng...";
+                    if(spinnerEl) spinnerEl.className = "spinner-border text-success mb-4";
+                    if(iconEl) iconEl.className = "bi bi-shield-check text-success mb-3 d-block";
+                    
+                    // 2. Lấy đề thi từ máy chủ (Chạy ngầm phía sau)
                     callAPI.then(function(questions) {
                         Swal.close();
                         setTimeout(() => {
@@ -3988,9 +4005,13 @@ function startRealExamSingle(examId, examTitle) {
                             setTimeout(() => { if (typeof MathJax !== 'undefined') { MathJax.typesetClear(); MathJax.typesetPromise(); } }, 500);
                         }, 300);
                     }).getExamQuestionsForStudent(examId);
+                } else {
+                    isChecking = false; // Mở khóa cho nhịp quét tiếp theo
                 }
+            }).catch(function(err) {
+                isChecking = false; // Nếu lỗi mạng chập chờn cũng mở khóa để thử lại
             }).checkApprovalMultiStatus(safeId, examId); 
-        }, 3000);
+        }, 1500); 
     }).requestToEnterMultiExam(safeId, safeName, examId); 
 }
 // ===================================================================
