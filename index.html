@@ -1897,8 +1897,8 @@ function filterAssignStudents() {
     // Hiện vòng xoay
     container.innerHTML = '<div class="text-center text-primary py-4"><div class="spinner-border spinner-border-sm me-2"></div><span class="fw-bold">Đang tải danh sách...</span></div>';
 
-    // Gọi dữ liệu từ máy chủ
-    callAPI.then(function(list) {
+    // Gọi dữ liệu từ máy chủ (ĐÃ VÁ LỖI: Bổ sung lệnh .getStudentList() ở cuối)
+    callAPI.withSuccessHandler(function(list) {
         if (!list || list.length === 0) {
             container.innerHTML = '<div class="text-center text-danger fw-bold py-3">Lỗi: Không lấy được dữ liệu học sinh.</div>';
             return;
@@ -1949,10 +1949,11 @@ function filterAssignStudents() {
         
         container.innerHTML = html;
         
-    }).catch(function(error) {
+    }).withFailureHandler(function(error) {
         container.innerHTML = '<div class="text-center text-danger fw-bold py-3">Lỗi tải dữ liệu.</div>';
-    }); 
+    }).getStudentList(); /* <-- ĐÃ BỔ SUNG LỆNH BÓP CÒ TẠI ĐÂY */
 }
+
 
 function toggleUnlockTime() { document.getElementById('assign-unlock-time').style.display = document.getElementById('assign-unlock-rule').value === 'TIME' ? 'block' : 'none'; }
 
