@@ -2933,7 +2933,7 @@ function startExamStatusMonitor() {
     setInterval(checkDGNLStatus, 10000); 
 }
 
-// --- HÀM TẢI KỲ THI CHO HỌC SINH (VÁ LỖI NHẬN DIỆN TÊN BÀI [KHẢO THÍ]) ---
+// --- HÀM TẢI KỲ THI CHO HỌC SINH (VÁ LỖI PHÂN BIỆT CHỮ HOA/THƯỜNG) ---
 function checkDGNLStatus() {
     if (document.getElementById('dashboard') && document.getElementById('dashboard').style.display === 'none') return;
     let session = JSON.parse(localStorage.getItem('lms_session') || '{}');
@@ -2953,13 +2953,18 @@ function checkDGNLStatus() {
             let masterLessons = (masterRes && masterRes.lessons) ? masterRes.lessons : [];
             
             // ===============================================================
-            // ĐỒNG BỘ MASTER: Dùng thuật toán .includes() để bỏ qua chữ [Khảo thí]
+            // ĐỒNG BỘ MASTER: Dùng toLowerCase() để triệt tiêu lỗi phân biệt hoa/thường
             // ===============================================================
             exams.forEach(ex => {
-                let masterTask = masterLessons.find(l => l.title.includes(ex.examTitle) || ex.examTitle.includes(l.title));
+                let exTitleLower = (ex.examTitle || "").toLowerCase().trim();
+                let masterTask = masterLessons.find(l => {
+                    let lTitleLower = (l.title || "").toLowerCase().trim();
+                    // So sánh không phân biệt hoa/thường và bỏ qua chữ [Khảo thí]
+                    return lTitleLower.includes(exTitleLower) || exTitleLower.includes(lTitleLower);
+                });
                 
                 if (masterTask && masterTask.score !== undefined && masterTask.score !== null && masterTask.score !== "") {
-                    ex.score = masterTask.score; // Lấy đúng 9.0 chép đè qua
+                    ex.score = masterTask.score; // Chép đè 9.0 chuẩn xác 100%
                     ex.status = "Đã chấm";       
                     ex.isPublished = true;
                 }
@@ -2986,7 +2991,7 @@ function checkDGNLStatus() {
                         
                         if (isTrackingOpen) {
                             let footText = document.querySelector('.tf-text');
-                            if (footText && footText.innerText.includes(ex.examTitle.toUpperCase())) {
+                            if (footText && footText.innerText.toUpperCase().includes(ex.examTitle.toUpperCase())) {
                                 Swal.close();
                                 Swal.fire({toast: true, position: 'top-end', icon: 'success', title: '🔔 Đã có điểm môn ' + ex.examTitle, showConfirmButton: false, timer: 5000});
                             }
