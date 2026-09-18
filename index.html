@@ -2933,7 +2933,7 @@ function startExamStatusMonitor() {
     setInterval(checkDGNLStatus, 10000); 
 }
 
-// --- HÀM TẢI KỲ THI CHO HỌC SINH (ÉP ĐỒNG BỘ ĐIỂM TỪ MASTER) ---
+// --- HÀM TẢI KỲ THI CHO HỌC SINH (VÁ LỖI NHẬN DIỆN TÊN BÀI [KHẢO THÍ]) ---
 function checkDGNLStatus() {
     if (document.getElementById('dashboard') && document.getElementById('dashboard').style.display === 'none') return;
     let session = JSON.parse(localStorage.getItem('lms_session') || '{}');
@@ -2949,28 +2949,26 @@ function checkDGNLStatus() {
             return;
         }
 
-        // ===============================================================
-        // ĐỒNG BỘ MASTER: Lồng ghép gọi dữ liệu Bảng Điểm Lớp để ép điểm 
-        // ===============================================================
         callAPI.then(function(masterRes) {
             let masterLessons = (masterRes && masterRes.lessons) ? masterRes.lessons : [];
             
-            // Ép điểm Kỳ thi của học sinh khớp 100% với Bảng Điểm Lớp
+            // ===============================================================
+            // ĐỒNG BỘ MASTER: Dùng thuật toán .includes() để bỏ qua chữ [Khảo thí]
+            // ===============================================================
             exams.forEach(ex => {
-                let masterTask = masterLessons.find(l => l.title === ex.examTitle);
+                let masterTask = masterLessons.find(l => l.title.includes(ex.examTitle) || ex.examTitle.includes(l.title));
+                
                 if (masterTask && masterTask.score !== undefined && masterTask.score !== null && masterTask.score !== "") {
-                    ex.score = masterTask.score; // Ghi đè điểm 8.5 thành 9.0
-                    ex.status = "Đã chấm";       // Ép thẻ chuyển sang màu xanh hiện điểm
+                    ex.score = masterTask.score; // Lấy đúng 9.0 chép đè qua
+                    ex.status = "Đã chấm";       
                     ex.isPublished = true;
                 }
             });
 
-            // 1. Thêm trạng thái (status) vào thuật toán để hệ thống nhạy bén với thay đổi
             let currentHash = exams.map(e => e.id + ":" + e.isSubmitted + ":" + e.status + ":" + e.score).join("|");
             if (container.dataset.examHash === currentHash) return; 
 
             let newHtml = '';
-            // 2. Nhận diện xem học sinh có đang mở bảng Tracking không
             let isTrackingOpen = Swal.isVisible() && document.querySelector('.tracking-title');
 
             exams.forEach(ex => {
@@ -2986,7 +2984,6 @@ function checkDGNLStatus() {
                         btnHtml = `<button class="btn btn-warning text-dark w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" onclick="openExamReviewMulti('${ex.id}')"><i class="bi bi-eye-fill me-1"></i> XEM LẠI BÀI LÀM</button>`;
                         borderColor = '#198754'; iconBg = '#198754'; titleColor = '#198754';
                         
-                        // NẾU GIÁO VIÊN BẤM TRẢ ĐIỂM -> ĐÓNG BẢNG TRACKING NGAY LẬP TỨC VÀ BÁO HỶ
                         if (isTrackingOpen) {
                             let footText = document.querySelector('.tf-text');
                             if (footText && footText.innerText.includes(ex.examTitle.toUpperCase())) {
@@ -2999,26 +2996,6 @@ function checkDGNLStatus() {
                         statusHtml = `<div class="mt-2 text-center"><span class="badge bg-secondary shadow-sm px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split"></i> ${waitText}</span></div>`;
                         btnHtml = `<button class="btn text-white w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" style="background: linear-gradient(135deg, #885CF6 0%, #c4b5fd 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="openExamTrackingModal('${ex.examTitle}', ${isGraded})"><i class="bi bi-radar me-1"></i> XEM TIẾN TRÌNH</button>`;
                         borderColor = '#6c757d'; iconBg = '#6c757d'; titleColor = '#6c757d';
-                        
-                        // NẾU GIÁO VIÊN BẤM TỰ ĐỘNG CHẤM -> BẬT XANH GIAI ĐOẠN 3 NGAY TRÊN BẢNG TRACKING
-                        if (isTrackingOpen && isGraded) {
-                            let footText = document.querySelector('.tf-text');
-                            if (footText && footText.innerText.includes(ex.examTitle.toUpperCase())) {
-                                let items = document.querySelectorAll('.timeline-item');
-                                if (items.length >= 4) {
-                                    items[2].className = "timeline-item done";
-                                    items[2].querySelector('.timeline-icon').innerHTML = '<i class="bi bi-check-lg"></i>';
-                                    items[2].querySelector('.timeline-status').className = "timeline-status status-done";
-                                    items[2].querySelector('.timeline-status').innerText = "Done";
-                                    items[2].querySelector('p').innerText = "Hoàn tất phân tích kết quả";
-                                    
-                                    items[3].className = "timeline-item active";
-                                    items[3].querySelector('.timeline-status').className = "timeline-status status-active";
-                                    items[3].querySelector('.timeline-status').innerText = "Live";
-                                    items[3].querySelector('p').innerText = "Hệ thống chuẩn bị gửi Email & Điểm";
-                                }
-                            }
-                        }
                     }
                 } else {
                     statusHtml = `<div class="mt-2 text-center"><span class="badge bg-success shadow-sm px-3 py-2 rounded-pill animate__animated animate__pulse animate__infinite">🟢 ĐANG MỞ - VÀO THI</span></div>`;
@@ -3037,7 +3014,7 @@ function checkDGNLStatus() {
             });
             if (!window.isDoingExam) { container.innerHTML = newHtml; container.dataset.examHash = currentHash; }
 
-        }).getClassroomData(safeId, safeName); // Lồng lệnh vào đây!
+        }).getClassroomData(safeId, safeName); 
 
     }).getAvailableExamsForStudent(safeId);
 }
