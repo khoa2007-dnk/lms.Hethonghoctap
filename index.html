@@ -2271,15 +2271,17 @@ function deleteSelectedSubmissions() {
   });
 }
 
-// --- CHẤM ĐIỂM TRỰC TIẾP Ở MÀN HÌNH CHÍNH VÀ XÓA CACHE ---
+// --- CHẤM ĐIỂM TRỰC TIẾP Ở MÀN HÌNH CHÍNH VÀ ĐỒNG BỘ TOÀN HỆ THỐNG ---
 function execInlineGrade(row) {
     const input = document.getElementById(`inline-score-${row}`); if (!input) return;
     const score = input.value.trim();
     if (!score) { Swal.fire({toast: true, position: 'top-end', icon: 'warning', title: 'Thầy chưa nhập điểm!', showConfirmButton: false, timer: 2000}); input.focus(); return; }
     Swal.fire({title: 'Đang lưu...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
     callAPI.withSuccessHandler(() => { 
-        // Phá bộ đệm để Bảng điểm lớp tự tải lại dữ liệu mới khi mở lên
-        localStorage.removeItem('TURBO_MAX_getStudentProfiles_[]');
+        // Dọn sạch toàn bộ Cache
+        Object.keys(localStorage).forEach(key => { if (key.startsWith('TURBO_MAX_')) localStorage.removeItem(key); });
+        Object.keys(sessionStorage).forEach(key => { if (key.startsWith('turbo_')) sessionStorage.removeItem(key); });
+        
         Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã lưu điểm!', showConfirmButton: false, timer: 2000}); 
         loadTeacherData(); 
     }).withFailureHandler(err => { Swal.fire('Lỗi mạng', err.message, 'error'); }).saveGradeAndReturn(row, score, ""); 
@@ -2296,8 +2298,10 @@ function quickGradeModal(row, studentName, currentScore, encodedFb) {
         if (result.isConfirmed) { 
             Swal.fire({title: 'Đang xử lý...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }}); 
             callAPI.withSuccessHandler(() => { 
-                // Phá bộ đệm để Bảng điểm lớp tự tải lại dữ liệu mới khi mở lên
-                localStorage.removeItem('TURBO_MAX_getStudentProfiles_[]');
+                // Dọn sạch toàn bộ Cache
+                Object.keys(localStorage).forEach(key => { if (key.startsWith('TURBO_MAX_')) localStorage.removeItem(key); });
+                Object.keys(sessionStorage).forEach(key => { if (key.startsWith('turbo_')) sessionStorage.removeItem(key); });
+                
                 Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã cập nhật điểm!', showConfirmButton: false, timer: 2000}); 
                 loadTeacherData(); 
             }).saveGradeAndReturn(row, result.value.score, result.value.feedback); 
@@ -2355,6 +2359,11 @@ function execSaveAllPro() {
     callAPI.withSuccessHandler(res => {
         btn.disabled = false; btn.innerHTML = 'LƯU & ĐÓNG';
         bootstrap.Modal.getInstance(document.getElementById('galleryModal')).hide();
+        
+        // Dọn sạch toàn bộ Cache
+        Object.keys(localStorage).forEach(key => { if (key.startsWith('TURBO_MAX_')) localStorage.removeItem(key); });
+        Object.keys(sessionStorage).forEach(key => { if (key.startsWith('turbo_')) sessionStorage.removeItem(key); });
+        
         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Đã chấm bài thành công!', showConfirmButton: false, timer: 2000 });
         loadTeacherData(); 
     }).withFailureHandler(err => {
@@ -3782,12 +3791,11 @@ function saveMatrixScore(studentName, lessonTitle, inputEl) {
                 }
             }
 
-            // 2. Dọn sạch bộ nhớ đệm (Cache) để các màn hình khác tải lại điểm mới
-            localStorage.removeItem('TURBO_MAX_getStudentProfiles_[]');
-            localStorage.removeItem('TURBO_MAX_getTeacherData_[]');
-            sessionStorage.removeItem('turbo_teacherData');
+            // 2. CHỔI QUÉT RÁC: DỌN SẠCH TOÀN BỘ BỘ NHỚ ĐỆM ĐỂ ÉP TẢI LẠI ĐIỂM MỚI
+            Object.keys(localStorage).forEach(key => { if (key.startsWith('TURBO_MAX_')) localStorage.removeItem(key); });
+            Object.keys(sessionStorage).forEach(key => { if (key.startsWith('turbo_')) sessionStorage.removeItem(key); });
             
-            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã chốt điểm & Đồng bộ PDF!', showConfirmButton: false, timer: 1500});
+            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã chốt điểm & Đồng bộ toàn hệ thống!', showConfirmButton: false, timer: 1500});
         })
         .withFailureHandler(err => {
             inputEl.disabled = false;
