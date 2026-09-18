@@ -2933,6 +2933,7 @@ function startExamStatusMonitor() {
     setInterval(checkDGNLStatus, 10000); 
 }
 
+// --- HÀM TẢI KỲ THI CHO HỌC SINH (ÉP ĐỒNG BỘ ĐIỂM TỪ MASTER) ---
 function checkDGNLStatus() {
     if (document.getElementById('dashboard') && document.getElementById('dashboard').style.display === 'none') return;
     let session = JSON.parse(localStorage.getItem('lms_session') || '{}');
@@ -2945,6 +2946,19 @@ function checkDGNLStatus() {
             container.innerHTML = `<div class="text-center text-muted small fw-bold mb-4" style="opacity: 0.6;"><i class="bi bi-shield-check me-1 fs-6"></i> Hiện tại không có kỳ thi nào đang diễn ra.</div>`;
             delete container.dataset.examHash; 
             return;
+        }
+
+        // ===============================================================
+        // ĐỒNG BỘ MASTER: Ép điểm Kỳ thi của học sinh khớp 100% với Bảng Điểm Lớp
+        // ===============================================================
+        if (window.currentLessonsData) {
+            exams.forEach(ex => {
+                let masterTask = window.currentLessonsData.find(l => l.title === ex.examTitle);
+                if (masterTask && masterTask.score !== undefined && masterTask.score !== "") {
+                    ex.score = masterTask.score; // Ghi đè điểm 8.5 thành 9.0
+                    ex.status = "Đã chấm";       // Ép thẻ chuyển sang màu xanh hiện điểm
+                }
+            });
         }
         
         // 1. Thêm trạng thái (status) vào thuật toán để hệ thống nhạy bén với thay đổi
@@ -2960,7 +2974,8 @@ function checkDGNLStatus() {
             let statusHtml = ''; let btnHtml = '';
 
             if (ex.isSubmitted) {
-                let isPublished = (ex.status === "Đã trả điểm" || ex.status === "Đã công bố" || ex.status === "PUBLISHED" || ex.status === "COMPLETED" || ex.isPublished === true);
+                // Tinh chỉnh: Bất cứ khi nào có điểm Master dội về thì mở khóa cho học sinh xem luôn
+                let isPublished = (ex.status === "Đã trả điểm" || ex.status === "Đã công bố" || ex.status === "PUBLISHED" || ex.status === "COMPLETED" || ex.isPublished === true || (ex.score !== "" && ex.score !== undefined && ex.score !== null));
                 let isGraded = (ex.status === "Đã chấm" || ex.status === "GRADED" || (ex.score !== "" && ex.score !== undefined && ex.score !== null));
 
                 if (isPublished) {
@@ -2982,7 +2997,7 @@ function checkDGNLStatus() {
                     btnHtml = `<button class="btn text-white w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" style="background: linear-gradient(135deg, #885CF6 0%, #c4b5fd 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="openExamTrackingModal('${ex.examTitle}', ${isGraded})"><i class="bi bi-radar me-1"></i> XEM TIẾN TRÌNH</button>`;
                     borderColor = '#6c757d'; iconBg = '#6c757d'; titleColor = '#6c757d';
                     
-                    // NẾU GIÁO VIÊN BẤM TỰ ĐỘNG CHẤM -> BẬT XANH GIAI ĐOẠN 3 NGAY TRÊN BẢNG TRACKING (KHÔNG CẦN F5)
+                    // NẾU GIÁO VIÊN BẤM TỰ ĐỘNG CHẤM -> BẬT XANH GIAI ĐOẠN 3 NGAY TRÊN BẢNG TRACKING
                     if (isTrackingOpen && isGraded) {
                         let footText = document.querySelector('.tf-text');
                         if (footText && footText.innerText.includes(ex.examTitle.toUpperCase())) {
