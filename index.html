@@ -413,6 +413,32 @@
     .modal-content { border: none; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.2); }
     #teacher-table-container { width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; border: 1px solid #dee2e6; border-radius: 8px; }
     .table-teacher th, .table-teacher td { white-space: nowrap !important; vertical-align: middle; }
+
+    /* =================================================================== */
+    /* TỐI ƯU HÓA HIỆU NĂNG CARD ĐỒ HỌA CHO ĐIỆN THOẠI & IPAD              */
+    /* =================================================================== */
+    @media (max-width: 1024px) {
+        /* Tắt hiệu ứng kính mờ (Nguyên nhân chính gây lag trên Safari/iOS) */
+        .modal, #addStaffModal, #studentProfileModal, .sidebar-overlay, .login-card {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            background-color: rgba(0,0,0,0.85) !important; /* Đổi sang nền đen đặc thay vì mờ */
+        }
+        
+        .login-card {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* Giảm tải thuật toán đổ bóng (Box-shadow) */
+        .card, .saas-stat-card, .premium-feature-card, .exam-card-item, .modal-content {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important; 
+        }
+
+        /* Tắt các hoạt ảnh nhấp nháy liên tục không cần thiết */
+        .animate__pulse, .animate__flash {
+            animation: none !important;
+        }
+    }
     
     @media (max-width: 768px) {
       #side-branding-bar { width: 6px !important; }
