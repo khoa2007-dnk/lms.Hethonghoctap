@@ -2271,12 +2271,18 @@ function deleteSelectedSubmissions() {
   });
 }
 
+// --- CHẤM ĐIỂM TRỰC TIẾP Ở MÀN HÌNH CHÍNH VÀ XÓA CACHE ---
 function execInlineGrade(row) {
     const input = document.getElementById(`inline-score-${row}`); if (!input) return;
     const score = input.value.trim();
     if (!score) { Swal.fire({toast: true, position: 'top-end', icon: 'warning', title: 'Thầy chưa nhập điểm!', showConfirmButton: false, timer: 2000}); input.focus(); return; }
     Swal.fire({title: 'Đang lưu...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-    callAPI.withSuccessHandler(() => { Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã lưu điểm!', showConfirmButton: false, timer: 2000}); loadTeacherData(); }).withFailureHandler(err => { Swal.fire('Lỗi mạng', err.message, 'error'); }).saveGradeAndReturn(row, score, ""); 
+    callAPI.withSuccessHandler(() => { 
+        // Phá bộ đệm để Bảng điểm lớp tự tải lại dữ liệu mới khi mở lên
+        localStorage.removeItem('TURBO_MAX_getStudentProfiles_[]');
+        Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã lưu điểm!', showConfirmButton: false, timer: 2000}); 
+        loadTeacherData(); 
+    }).withFailureHandler(err => { Swal.fire('Lỗi mạng', err.message, 'error'); }).saveGradeAndReturn(row, score, ""); 
 }
 
 function quickGradeModal(row, studentName, currentScore, encodedFb) {
@@ -2286,7 +2292,17 @@ function quickGradeModal(row, studentName, currentScore, encodedFb) {
         html: `<div class="mb-3 text-start mt-3"><label class="form-label fw-bold text-dark">Điểm số:</label><input type="number" id="swal-quick-score" class="form-control form-control-lg border-primary text-danger fw-bold text-center shadow-sm" value="${currentScore || ''}" placeholder="0 - 10" step="0.25"></div><div class="mb-2 text-start"><label class="form-label fw-bold text-dark">Nhận xét / Lời phê:</label><textarea id="swal-quick-feedback" class="form-control border-secondary shadow-sm" rows="3" placeholder="Ghi chú thêm cho học sinh...">${currentFeedback || ''}</textarea></div>`,
         showCancelButton: true, confirmButtonText: 'LƯU LẠI', cancelButtonText: 'Hủy', confirmButtonColor: '#198754',
         preConfirm: () => { const score = document.getElementById('swal-quick-score').value; if (!score) { Swal.showValidationMessage('Thầy chưa nhập điểm số!'); return false; } return { score: score, feedback: document.getElementById('swal-quick-feedback').value }; }
-    }).then((result) => { if (result.isConfirmed) { Swal.fire({title: 'Đang xử lý...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }}); callAPI.withSuccessHandler(() => { Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã cập nhật điểm!', showConfirmButton: false, timer: 2000}); loadTeacherData(); }).saveGradeAndReturn(row, result.value.score, result.value.feedback); } });
+    }).then((result) => { 
+        if (result.isConfirmed) { 
+            Swal.fire({title: 'Đang xử lý...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }}); 
+            callAPI.withSuccessHandler(() => { 
+                // Phá bộ đệm để Bảng điểm lớp tự tải lại dữ liệu mới khi mở lên
+                localStorage.removeItem('TURBO_MAX_getStudentProfiles_[]');
+                Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã cập nhật điểm!', showConfirmButton: false, timer: 2000}); 
+                loadTeacherData(); 
+            }).saveGradeAndReturn(row, result.value.score, result.value.feedback); 
+        } 
+    });
 }
 
 // ===================================================================
@@ -3737,10 +3753,11 @@ function renderPersonalizedMatrix(gradeFilter) {
     }
 }
 
+// --- ĐỒNG BỘ ĐIỂM TỪ MA TRẬN BẢNG ĐIỂM LỚP ---
 function saveMatrixScore(studentName, lessonTitle, inputEl) {
     const score = inputEl.value.trim();
     inputEl.disabled = true;
-    Swal.fire({toast: true, position: 'top-end', title: 'Đang lưu điểm...', showConfirmButton: false, timer: 1000});
+    Swal.fire({toast: true, position: 'top-end', title: 'Đang chốt điểm...', showConfirmButton: false, timer: 1000});
     callAPI
         .withSuccessHandler(() => {
             inputEl.disabled = false;
@@ -3748,7 +3765,29 @@ function saveMatrixScore(studentName, lessonTitle, inputEl) {
                 inputEl.classList.remove('text-warning');
                 inputEl.classList.add('text-success', 'fs-5');
             }
-            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã cập nhật điểm số!', showConfirmButton: false, timer: 1500});
+            
+            // 1. Ép hệ thống nhớ điểm mới ngay lập tức để xuất Phiếu PDF chuẩn xác
+            if (window.globalStudentsData) {
+                let s = window.globalStudentsData.find(x => x.name === studentName);
+                if (s && s.details) {
+                    let task = s.details.find(d => d.title === lessonTitle);
+                    if (task) task.score = score;
+                }
+            }
+            if (window.safeMatrixData) {
+                let s2 = window.safeMatrixData.find(x => x.name === studentName);
+                if (s2 && s2.details) {
+                    let task2 = s2.details.find(d => d.title === lessonTitle);
+                    if (task2) task2.score = score;
+                }
+            }
+
+            // 2. Dọn sạch bộ nhớ đệm (Cache) để các màn hình khác tải lại điểm mới
+            localStorage.removeItem('TURBO_MAX_getStudentProfiles_[]');
+            localStorage.removeItem('TURBO_MAX_getTeacherData_[]');
+            sessionStorage.removeItem('turbo_teacherData');
+            
+            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã chốt điểm & Đồng bộ PDF!', showConfirmButton: false, timer: 1500});
         })
         .withFailureHandler(err => {
             inputEl.disabled = false;
