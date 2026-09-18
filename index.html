@@ -3273,11 +3273,19 @@ function toggleMultiExamStatus(examId, newState) {
     }).toggleMultiExamStatus(examId, newState);
 }
 
+// --- 5. XÓA KỲ THI (TỨC THỜI) ---
 function deleteMultiExam(examId) {
     Swal.fire({ title: 'Xóa kỳ thi này?', text: "Dữ liệu đề thi và kết quả sẽ bị xóa sạch!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', confirmButtonText: 'Xóa vĩnh viễn' }).then((result) => {
         if(result.isConfirmed) {
-            Swal.fire({title: 'Đang xóa...', didOpen: () => Swal.showLoading()});
-            callAPI.withSuccessHandler(res => { if(res.success) { Swal.fire('Thành công', res.message, 'success'); loadMultiExams(); } }).deleteMultiExamConfig(examId);
+            // Tắt vòng xoay loading chặn màn hình
+            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đang dọn dẹp kỳ thi...', showConfirmButton: false, timer: 2000});
+            
+            // Ẩn kỳ thi trên giao diện ngay lập tức
+            window.multiExamData = window.multiExamData.filter(e => e.id !== examId);
+            filterMultiExamList();
+            
+            // Chạy lệnh xóa ngầm
+            callAPI.deleteMultiExamConfig(examId);
         }
     });
 }
@@ -3349,11 +3357,43 @@ function loadMultiWaitingStudents(eIdOverride) {
     }).getMultiWaitingStudents(eId);
 }
 
+// --- DUYỆT HỌC SINH TỐC ĐỘ CAO (OPTIMISTIC UI) ---
 function execApproveMultiStudent(studentId, examId, btn) {
-    if(btn) { btn.disabled = true; btn.classList.remove('btn-success'); btn.classList.add('btn-secondary'); btn.innerHTML = 'Đang xử lý...'; }
+    // 1. Tóm ngay lấy thẻ chứa thông tin của học sinh đang được bấm
+    let rowItem = btn ? btn.closest('.list-group-item') : null;
+    let listArea = document.getElementById('waiting-students-list');
+
+    // 2. CHO "BỐC HƠI" KHỎI MÀN HÌNH NGAY LẬP TỨC (KHÔNG CHỜ MÁY CHỦ)
+    if(rowItem) {
+        rowItem.style.transition = "all 0.3s ease";
+        rowItem.style.opacity = "0";
+        rowItem.style.transform = "translateX(50px)";
+        
+        setTimeout(() => {
+            rowItem.remove(); // Xóa thẻ html đó đi
+            
+            // Nếu duyệt xong bạn cuối cùng, lập tức báo trống danh sách
+            if (listArea && listArea.querySelectorAll('.list-group-item').length === 0) {
+                listArea.innerHTML = '<div class="text-center py-4 bg-white border rounded-4 shadow-sm mt-2 animate__animated animate__fadeIn"><i class="bi bi-cup-hot fs-1 text-secondary mb-2 d-block"></i><p class="text-muted fw-bold mb-0">Tuyệt vời! Không có học sinh nào đang chờ duyệt.</p></div>';
+            }
+        }, 300); // 300ms là thời gian mượt mà của hiệu ứng trượt
+    }
+
+    // 3. THÔNG BÁO NHẸ NHÀNG ĐỂ GIÁO VIÊN TIẾP TỤC DUYỆT BẠN KHÁC TỨC THÌ
+    Swal.fire({toast: true, position: 'top-end', title: 'Đang đẩy lệnh...', showConfirmButton: false, timer: 800});
+
+    // 4. GỬI LỆNH LÊN MÁY CHỦ CHẠY NGẦM PHÍA SAU
     callAPI.withSuccessHandler(res => {
-        if(res && res.success) { Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã duyệt!', showConfirmButton: false, timer: 1500}); loadMultiWaitingStudents(); } 
-        else { Swal.fire({toast: true, position: 'top-end', icon: 'error', title: 'Lỗi', showConfirmButton: false, timer: 2000}); loadMultiWaitingStudents(); }
+        if(res && res.success) {
+            // Máy chủ báo về thành công thì thôi, không cần làm phiền giáo viên
+        } else {
+            // Chỉ khi lỗi (rất hiếm) mới báo và tải lại danh sách
+            Swal.fire({toast: true, position: 'top-end', icon: 'error', title: 'Lỗi: ' + res.message, showConfirmButton: false, timer: 2000});
+            loadMultiWaitingStudents(examId); 
+        }
+    }).withFailureHandler(err => {
+        Swal.fire({toast: true, position: 'top-end', icon: 'error', title: 'Lỗi mạng: ' + err.message, showConfirmButton: false, timer: 2000});
+        loadMultiWaitingStudents(examId);
     }).approveMultiStudentEntry(studentId, examId);
 }
 
@@ -3394,36 +3434,70 @@ function openStatsView(examId, examTitle) {
     }).getExamStatsAndKeyMulti(examId);
 }
 
+// --- 1. LƯU ĐÁP ÁN CHUẨN (CHẠY NGẦM) ---
 function saveMultiAnswerKey() {
     let examId = document.getElementById('stats-current-exam-id').value;
     let inputs = document.querySelectorAll('#multi-answer-key-grid input'); let ansObj = {};
     for (let i = 0; i < inputs.length; i++) { let val = inputs[i].value.trim().toUpperCase(); if(val) ansObj[i + 1] = val; }
-    Swal.fire({title: 'Đang lưu...', didOpen: () => Swal.showLoading()});
-    callAPI.withSuccessHandler(() => Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã lưu đáp án!', showConfirmButton: false, timer: 1500})).saveMultiAnswerKey(examId, JSON.stringify(ansObj));
+    
+    // Báo lưu thành công ngay lập tức, tắt luôn loading
+    Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã lưu đáp án!', showConfirmButton: false, timer: 1500});
+    
+    // Đẩy dữ liệu lên máy chủ ngầm
+    callAPI.saveMultiAnswerKey(examId, JSON.stringify(ansObj));
 }
 
+// --- 2. TỰ ĐỘNG CHẤM ĐIỂM (CHẠY NGẦM - KHÔNG CHẶN MÀN HÌNH) ---
 function autoGradeMulti() {
     let examId = document.getElementById('stats-current-exam-id').value;
-    Swal.fire({title: 'Đang chấm bài...', html: 'Hệ thống đang đối chiếu đáp án...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+    
+    // Báo đang xử lý bằng Toast góc màn hình, thầy có thể đi làm việc khác
+    Swal.fire({toast: true, position: 'top-end', icon: 'info', title: 'Hệ thống đang tự động chấm ngầm...', showConfirmButton: false, timer: 3000});
+    
     callAPI.withSuccessHandler(res => {
-        if(res.success) { Swal.fire('Hoàn tất!', `Đã chấm xong bài thi.`, 'success'); openStatsView(examId, 'ĐANG TẢI LẠI...'); }
-        else Swal.fire('Lỗi', res.message, 'error');
+        if(res.success) { 
+            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã chấm xong bài thi!', showConfirmButton: false, timer: 3000});
+            // Tải lại bảng điểm nếu thầy vẫn đang mở cửa sổ này
+            if(document.getElementById('multi-exam-stats-view').style.display !== 'none') openStatsView(examId, document.getElementById('stats-view-title').innerText.replace('KẾT QUẢ: ', '')); 
+        } else {
+            Swal.fire('Lỗi', res.message, 'error');
+        }
     }).processAutoGradeMulti(examId);
 }
 
+// --- 3. PHÁT HÀNH ĐIỂM & MAIL (CHẠY NGẦM) ---
 function publishMultiScores() {
     let examId = document.getElementById('stats-current-exam-id').value;
-    Swal.fire({title: 'Đang phát hành điểm...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+    
+    Swal.fire({toast: true, position: 'top-end', icon: 'info', title: 'Đang gửi Email & Điểm cho học sinh...', showConfirmButton: false, timer: 3000});
+    
     callAPI.withSuccessHandler(res => {
-        if(res.success) Swal.fire('Thành công', 'Đã trả điểm cho học sinh.', 'success'); else Swal.fire('Lỗi', res.message, 'error');
+        if(res.success) {
+            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã gửi điểm & Email thành công!', showConfirmButton: false, timer: 3000});
+        } else {
+            Swal.fire('Lỗi', res.message, 'error');
+        }
     }).publishMultiExamResults(examId);
 }
 
+// --- 4. CHO LÀM LẠI (XÓA BÀI HỌC SINH TỨC THỜI) ---
 function allowRetakeMulti(studentId, examId, studentName) {
     Swal.fire({ title: 'Cho phép làm lại?', text: `Hệ thống sẽ xóa bài nộp cũ của ${studentName}.`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Đồng ý, xóa bài cũ!', cancelButtonText: 'Hủy' }).then((result) => {
         if (result.isConfirmed) {
-            Swal.fire({title: 'Đang xử lý...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-            callAPI.withSuccessHandler(res => { if(res.success) { Swal.fire('Thành công!', 'Đã xóa bài cũ.', 'success'); openStatsView(examId, 'ĐANG TẢI LẠI...'); } }).deleteStudentSubmissionMulti(studentId, examId);
+            // Xóa thẻ của học sinh này trên giao diện ngay lập tức
+            let btnClicked = event.target.closest('button');
+            if(btnClicked) {
+                let row = btnClicked.closest('tr');
+                if(row) {
+                    row.style.transition = "all 0.3s"; row.style.opacity = "0"; 
+                    setTimeout(() => row.remove(), 300);
+                }
+            }
+            
+            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Đã xóa bài làm cũ!', showConfirmButton: false, timer: 2000});
+            
+            // Xóa trên máy chủ
+            callAPI.deleteStudentSubmissionMulti(studentId, examId);
         }
     });
 }
