@@ -2603,19 +2603,36 @@ function loadLessons() {
   }
   
   // 2. CHẠY NGẦM ĐỂ LẤY DỮ LIỆU MỚI NHẤT TỪ MÁY CHỦ
-  callAPI.withSuccessHandler(res => {
-    let newLessons = res.lessons.reverse();
-    let newString = JSON.stringify(newLessons);
-    
-    // So sánh: Nếu có thay đổi (có bài mới, điểm mới...) thì mới vẽ lại và bật báo động đỏ
-    if (newString !== cachedStudentLessons) {
-        sessionStorage.setItem('turbo_studentLessons_' + currentStudentId, newString);
-        currentLessons = newLessons; 
-        renderLessonsUI(currentLessons);
-        runUrgentRadar(currentLessons);
+      callAPI.withSuccessHandler(res => {
+        let newLessons = res.lessons.reverse();
+        
+        // GỌI MASTER DATA ĐỂ ĐÈ ĐIỂM BÀI TẬP CỦA HỌC SINH
+        callAPI.withSuccessHandler(masterData => {
+            let myMasterData = masterData.filter(r => r.student === currentStudentName);
+            
+            newLessons.forEach(lesson => {
+                let lTitleLower = (lesson.title || "").toLowerCase().trim();
+                let masterTask = myMasterData.find(r => {
+                    let rTitleLower = (r.lesson || "").toLowerCase().trim();
+                    return rTitleLower.includes(lTitleLower) || lTitleLower.includes(rTitleLower);
+                });
+                
+                if (masterTask && masterTask.score !== undefined && masterTask.score !== "") {
+                    lesson.score = masterTask.score;
+                }
+            });
+            
+            let newString = JSON.stringify(newLessons);
+            if (newString !== cachedStudentLessons) {
+                sessionStorage.setItem('turbo_studentLessons_' + currentStudentId, newString);
+                currentLessons = newLessons; 
+                renderLessonsUI(currentLessons);
+                runUrgentRadar(currentLessons);
+            }
+        }).getTeacherData();
+        
+      }).getClassroomData(currentStudentId, currentStudentName);
     }
-  }).getClassroomData(currentStudentId, currentStudentName);
-}
 
 function openLessonDetail(index) {
   const item = currentLessons[index];
@@ -2959,7 +2976,7 @@ function startExamStatusMonitor() {
     setInterval(checkDGNLStatus, 10000); 
 }
 
-// --- HÀM TẢI KỲ THI CHO HỌC SINH (VÁ LỖI PHÂN BIỆT CHỮ HOA/THƯỜNG) ---
+// --- HÀM TẢI KỲ THI CHO HỌC SINH (ÉP ĐỒNG BỘ ĐIỂM TỪ MASTER GIÁO VIÊN) ---
 function checkDGNLStatus() {
     if (document.getElementById('dashboard') && document.getElementById('dashboard').style.display === 'none') return;
     let session = JSON.parse(localStorage.getItem('lms_session') || '{}');
@@ -2975,22 +2992,20 @@ function checkDGNLStatus() {
             return;
         }
 
-        callAPI.then(function(masterRes) {
-            let masterLessons = (masterRes && masterRes.lessons) ? masterRes.lessons : [];
+        // GỌI THẲNG DỮ LIỆU TỪ MÀN HÌNH CHÍNH CỦA GIÁO VIÊN (MASTER DATA)
+        callAPI.then(function(masterData) {
+            let myMasterData = masterData.filter(r => r.student === safeName);
             
-            // ===============================================================
-            // ĐỒNG BỘ MASTER: Dùng toLowerCase() để triệt tiêu lỗi phân biệt hoa/thường
-            // ===============================================================
             exams.forEach(ex => {
                 let exTitleLower = (ex.examTitle || "").toLowerCase().trim();
-                let masterTask = masterLessons.find(l => {
-                    let lTitleLower = (l.title || "").toLowerCase().trim();
+                let masterTask = myMasterData.find(r => {
+                    let rTitleLower = (r.lesson || "").toLowerCase().trim();
                     // So sánh không phân biệt hoa/thường và bỏ qua chữ [Khảo thí]
-                    return lTitleLower.includes(exTitleLower) || exTitleLower.includes(lTitleLower);
+                    return rTitleLower.includes(exTitleLower) || exTitleLower.includes(rTitleLower);
                 });
                 
                 if (masterTask && masterTask.score !== undefined && masterTask.score !== null && masterTask.score !== "") {
-                    ex.score = masterTask.score; // Chép đè 9.0 chuẩn xác 100%
+                    ex.score = masterTask.score; // Lấy đúng 9.0 chép đè qua
                     ex.status = "Đã chấm";       
                     ex.isPublished = true;
                 }
@@ -3045,7 +3060,7 @@ function checkDGNLStatus() {
             });
             if (!window.isDoingExam) { container.innerHTML = newHtml; container.dataset.examHash = currentHash; }
 
-        }).getClassroomData(safeId, safeName); 
+        }).getTeacherData(); // <-- LẤY DỮ LIỆU TỪ MÀN HÌNH CHÍNH LÀM GỐC
 
     }).getAvailableExamsForStudent(safeId);
 }
@@ -3718,26 +3733,28 @@ function saveEditedQuestions() {
 // BỘ PHỤC HỒI 2: BẢNG ĐIỂM LỚP (MA TRẬN ĐIỂM) VÀ XUẤT PDF
 // ===================================================================
 
-// --- 1. BẢNG ĐIỂM LỚP (ÉP ĐỒNG BỘ TUYỆT ĐỐI TỪ MÁY CHỦ) ---
+// --- 1. BẢNG ĐIỂM LỚP (ÉP ĐỒNG BỘ TUYỆT ĐỐI TỪ MÁY CHỦ MASTER) ---
 function openGradeMatrixModal() {
     const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('gradeMatrixModal')); 
     modal.show();
     const container = document.getElementById('matrix-container');
     if(container) container.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div><h5 class="mt-3 text-primary fw-bold">Đang quét đồng bộ điểm số...</h5></div>';
     
-    // 1. Tải Màn hình chính trước để lấy điểm Master
     callAPI.withSuccessHandler(masterData => {
         window.allTeacherData = masterData;
-        
-        // 2. Tải Bảng điểm lớp và gán đè điểm
         callAPI.withSuccessHandler(profilesData => { 
             window.safeMatrixData = profilesData || []; 
             
-            // ĐỒNG BỘ MASTER: Lấy điểm Màn hình chính đè lên Bảng điểm lớp
+            // ĐỒNG BỘ MASTER: Ép điểm từ Màn hình chính
             window.safeMatrixData.forEach(student => {
                 if(student.details) {
+                    let myMaster = window.allTeacherData.filter(r => r.student === student.name);
                     student.details.forEach(task => {
-                        let mRecord = window.allTeacherData.find(r => r.student === student.name && r.lesson === task.title);
+                        let tTitleLower = (task.title || "").toLowerCase().trim();
+                        let mRecord = myMaster.find(r => {
+                            let rTitleLower = (r.lesson || "").toLowerCase().trim();
+                            return rTitleLower.includes(tTitleLower) || tTitleLower.includes(rTitleLower);
+                        });
                         if (mRecord && mRecord.score !== undefined && mRecord.score !== "") {
                             task.score = mRecord.score; 
                         }
@@ -3755,11 +3772,10 @@ function openGradeMatrixModal() {
         }).withFailureHandler(err => {
             if(container) container.innerHTML = `<div class="alert alert-danger p-4 shadow-sm fw-bold">Lỗi đồng bộ: ${err.message}</div>`;
         }).getStudentProfiles();
-
     }).getTeacherData();
 }
 
-// --- 2. HỒ SƠ HỌC SINH & XUẤT PDF (ÉP ĐỒNG BỘ TUYỆT ĐỐI) ---
+// --- 2. HỒ SƠ HỌC SINH & XUẤT PDF (ÉP ĐỒNG BỘ TUYỆT ĐỐI TỪ MASTER) ---
 function openStudentProfilesModal() { 
   document.getElementById('student-list-view').style.display = 'block'; 
   document.getElementById('student-detail-view').style.display = 'none'; 
@@ -3768,31 +3784,31 @@ function openStudentProfilesModal() {
   const container = document.getElementById('students-container');
   container.innerHTML = '<div class="text-center w-100 py-5"><div class="spinner-border text-warning" style="width: 3rem; height: 3rem;"></div><h5 class="mt-3 text-warning fw-bold">Đang đồng bộ Phiếu Liên Lạc...</h5></div>';
 
-  // 1. Tải Màn hình chính trước để lấy điểm Master
   callAPI.withSuccessHandler(masterData => {
       window.allTeacherData = masterData;
-      
-      // 2. Tải Hồ sơ và gán đè điểm chuẩn xác
       callAPI.withSuccessHandler(profilesData => {
           globalStudentsData = profilesData || [];
-          
           // ĐỒNG BỘ MASTER
           globalStudentsData.forEach(student => {
               if(student.details) {
+                  let myMaster = window.allTeacherData.filter(r => r.student === student.name);
                   student.details.forEach(task => {
-                      let mRecord = window.allTeacherData.find(r => r.student === student.name && r.lesson === task.title);
+                      let tTitleLower = (task.title || "").toLowerCase().trim();
+                      let mRecord = myMaster.find(r => {
+                          let rTitleLower = (r.lesson || "").toLowerCase().trim();
+                          return rTitleLower.includes(tTitleLower) || tTitleLower.includes(rTitleLower);
+                      });
                       if (mRecord && mRecord.score !== undefined && mRecord.score !== "") {
                           task.score = mRecord.score; 
                       }
                   });
               }
           });
-          
           renderStudentList();
       }).getStudentProfiles();
   }).getTeacherData();
 }
-
+    
 function filterMatrixByGrade() { 
     const select = document.getElementById('matrix-grade-filter');
     renderPersonalizedMatrix(select ? select.value : 'ALL'); 
