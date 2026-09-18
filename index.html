@@ -2938,6 +2938,7 @@ function checkDGNLStatus() {
     if (document.getElementById('dashboard') && document.getElementById('dashboard').style.display === 'none') return;
     let session = JSON.parse(localStorage.getItem('lms_session') || '{}');
     let safeId = window.currentStudentId || session.id || "HS_TEST";
+    let safeName = window.currentStudentName || session.name || "Học Sinh";
     let container = document.getElementById('student-exams-container');
     if (!container) return;
 
@@ -2949,90 +2950,95 @@ function checkDGNLStatus() {
         }
 
         // ===============================================================
-        // ĐỒNG BỘ MASTER: Ép điểm Kỳ thi của học sinh khớp 100% với Bảng Điểm Lớp
+        // ĐỒNG BỘ MASTER: Lồng ghép gọi dữ liệu Bảng Điểm Lớp để ép điểm 
         // ===============================================================
-        if (window.currentLessonsData) {
+        callAPI.then(function(masterRes) {
+            let masterLessons = (masterRes && masterRes.lessons) ? masterRes.lessons : [];
+            
+            // Ép điểm Kỳ thi của học sinh khớp 100% với Bảng Điểm Lớp
             exams.forEach(ex => {
-                let masterTask = window.currentLessonsData.find(l => l.title === ex.examTitle);
-                if (masterTask && masterTask.score !== undefined && masterTask.score !== "") {
+                let masterTask = masterLessons.find(l => l.title === ex.examTitle);
+                if (masterTask && masterTask.score !== undefined && masterTask.score !== null && masterTask.score !== "") {
                     ex.score = masterTask.score; // Ghi đè điểm 8.5 thành 9.0
                     ex.status = "Đã chấm";       // Ép thẻ chuyển sang màu xanh hiện điểm
+                    ex.isPublished = true;
                 }
             });
-        }
-        
-        // 1. Thêm trạng thái (status) vào thuật toán để hệ thống nhạy bén với thay đổi
-        let currentHash = exams.map(e => e.id + ":" + e.isSubmitted + ":" + e.status + ":" + e.score).join("|");
-        if (container.dataset.examHash === currentHash) return; 
 
-        let newHtml = '';
-        // 2. Nhận diện xem học sinh có đang mở bảng Tracking không
-        let isTrackingOpen = Swal.isVisible() && document.querySelector('.tracking-title');
+            // 1. Thêm trạng thái (status) vào thuật toán để hệ thống nhạy bén với thay đổi
+            let currentHash = exams.map(e => e.id + ":" + e.isSubmitted + ":" + e.status + ":" + e.score).join("|");
+            if (container.dataset.examHash === currentHash) return; 
 
-        exams.forEach(ex => {
-            let borderColor = '#dc3545'; let iconBg = '#dc3545'; let titleColor = '#dc3545';
-            let statusHtml = ''; let btnHtml = '';
+            let newHtml = '';
+            // 2. Nhận diện xem học sinh có đang mở bảng Tracking không
+            let isTrackingOpen = Swal.isVisible() && document.querySelector('.tracking-title');
 
-            if (ex.isSubmitted) {
-                // Tinh chỉnh: Bất cứ khi nào có điểm Master dội về thì mở khóa cho học sinh xem luôn
-                let isPublished = (ex.status === "Đã trả điểm" || ex.status === "Đã công bố" || ex.status === "PUBLISHED" || ex.status === "COMPLETED" || ex.isPublished === true || (ex.score !== "" && ex.score !== undefined && ex.score !== null));
-                let isGraded = (ex.status === "Đã chấm" || ex.status === "GRADED" || (ex.score !== "" && ex.score !== undefined && ex.score !== null));
+            exams.forEach(ex => {
+                let borderColor = '#dc3545'; let iconBg = '#dc3545'; let titleColor = '#dc3545';
+                let statusHtml = ''; let btnHtml = '';
 
-                if (isPublished) {
-                    statusHtml = `<div class="mt-2 text-center"><span class="badge bg-success shadow-sm px-3 py-2 rounded-pill"><i class="bi bi-trophy-fill text-warning"></i> ĐIỂM SỐ: ${ex.score}</span></div>`;
-                    btnHtml = `<button class="btn btn-warning text-dark w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" onclick="openExamReviewMulti('${ex.id}')"><i class="bi bi-eye-fill me-1"></i> XEM LẠI BÀI LÀM</button>`;
-                    borderColor = '#198754'; iconBg = '#198754'; titleColor = '#198754';
-                    
-                    // NẾU GIÁO VIÊN BẤM TRẢ ĐIỂM -> ĐÓNG BẢNG TRACKING NGAY LẬP TỨC VÀ BÁO HỶ
-                    if (isTrackingOpen) {
-                        let footText = document.querySelector('.tf-text');
-                        if (footText && footText.innerText.includes(ex.examTitle.toUpperCase())) {
-                            Swal.close();
-                            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: '🔔 Đã có điểm môn ' + ex.examTitle, showConfirmButton: false, timer: 5000});
+                if (ex.isSubmitted) {
+                    let isPublished = (ex.status === "Đã trả điểm" || ex.status === "Đã công bố" || ex.status === "PUBLISHED" || ex.status === "COMPLETED" || ex.isPublished === true || (ex.score !== "" && ex.score !== undefined && ex.score !== null));
+                    let isGraded = (ex.status === "Đã chấm" || ex.status === "GRADED" || (ex.score !== "" && ex.score !== undefined && ex.score !== null));
+
+                    if (isPublished) {
+                        statusHtml = `<div class="mt-2 text-center"><span class="badge bg-success shadow-sm px-3 py-2 rounded-pill"><i class="bi bi-trophy-fill text-warning"></i> ĐIỂM SỐ: ${ex.score}</span></div>`;
+                        btnHtml = `<button class="btn btn-warning text-dark w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" onclick="openExamReviewMulti('${ex.id}')"><i class="bi bi-eye-fill me-1"></i> XEM LẠI BÀI LÀM</button>`;
+                        borderColor = '#198754'; iconBg = '#198754'; titleColor = '#198754';
+                        
+                        // NẾU GIÁO VIÊN BẤM TRẢ ĐIỂM -> ĐÓNG BẢNG TRACKING NGAY LẬP TỨC VÀ BÁO HỶ
+                        if (isTrackingOpen) {
+                            let footText = document.querySelector('.tf-text');
+                            if (footText && footText.innerText.includes(ex.examTitle.toUpperCase())) {
+                                Swal.close();
+                                Swal.fire({toast: true, position: 'top-end', icon: 'success', title: '🔔 Đã có điểm môn ' + ex.examTitle, showConfirmButton: false, timer: 5000});
+                            }
                         }
-                    }
-                } else {
-                    let waitText = isGraded ? "Đã chấm xong, chờ công bố" : "Đang chờ chấm...";
-                    statusHtml = `<div class="mt-2 text-center"><span class="badge bg-secondary shadow-sm px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split"></i> ${waitText}</span></div>`;
-                    btnHtml = `<button class="btn text-white w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" style="background: linear-gradient(135deg, #885CF6 0%, #c4b5fd 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="openExamTrackingModal('${ex.examTitle}', ${isGraded})"><i class="bi bi-radar me-1"></i> XEM TIẾN TRÌNH</button>`;
-                    borderColor = '#6c757d'; iconBg = '#6c757d'; titleColor = '#6c757d';
-                    
-                    // NẾU GIÁO VIÊN BẤM TỰ ĐỘNG CHẤM -> BẬT XANH GIAI ĐOẠN 3 NGAY TRÊN BẢNG TRACKING
-                    if (isTrackingOpen && isGraded) {
-                        let footText = document.querySelector('.tf-text');
-                        if (footText && footText.innerText.includes(ex.examTitle.toUpperCase())) {
-                            let items = document.querySelectorAll('.timeline-item');
-                            if (items.length >= 4) {
-                                items[2].className = "timeline-item done";
-                                items[2].querySelector('.timeline-icon').innerHTML = '<i class="bi bi-check-lg"></i>';
-                                items[2].querySelector('.timeline-status').className = "timeline-status status-done";
-                                items[2].querySelector('.timeline-status').innerText = "Done";
-                                items[2].querySelector('p').innerText = "Hoàn tất phân tích kết quả";
-                                
-                                items[3].className = "timeline-item active";
-                                items[3].querySelector('.timeline-status').className = "timeline-status status-active";
-                                items[3].querySelector('.timeline-status').innerText = "Live";
-                                items[3].querySelector('p').innerText = "Hệ thống chuẩn bị gửi Email & Điểm";
+                    } else {
+                        let waitText = isGraded ? "Đã chấm xong, chờ công bố" : "Đang chờ chấm...";
+                        statusHtml = `<div class="mt-2 text-center"><span class="badge bg-secondary shadow-sm px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split"></i> ${waitText}</span></div>`;
+                        btnHtml = `<button class="btn text-white w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" style="background: linear-gradient(135deg, #885CF6 0%, #c4b5fd 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="openExamTrackingModal('${ex.examTitle}', ${isGraded})"><i class="bi bi-radar me-1"></i> XEM TIẾN TRÌNH</button>`;
+                        borderColor = '#6c757d'; iconBg = '#6c757d'; titleColor = '#6c757d';
+                        
+                        // NẾU GIÁO VIÊN BẤM TỰ ĐỘNG CHẤM -> BẬT XANH GIAI ĐOẠN 3 NGAY TRÊN BẢNG TRACKING
+                        if (isTrackingOpen && isGraded) {
+                            let footText = document.querySelector('.tf-text');
+                            if (footText && footText.innerText.includes(ex.examTitle.toUpperCase())) {
+                                let items = document.querySelectorAll('.timeline-item');
+                                if (items.length >= 4) {
+                                    items[2].className = "timeline-item done";
+                                    items[2].querySelector('.timeline-icon').innerHTML = '<i class="bi bi-check-lg"></i>';
+                                    items[2].querySelector('.timeline-status').className = "timeline-status status-done";
+                                    items[2].querySelector('.timeline-status').innerText = "Done";
+                                    items[2].querySelector('p').innerText = "Hoàn tất phân tích kết quả";
+                                    
+                                    items[3].className = "timeline-item active";
+                                    items[3].querySelector('.timeline-status').className = "timeline-status status-active";
+                                    items[3].querySelector('.timeline-status').innerText = "Live";
+                                    items[3].querySelector('p').innerText = "Hệ thống chuẩn bị gửi Email & Điểm";
+                                }
                             }
                         }
                     }
+                } else {
+                    statusHtml = `<div class="mt-2 text-center"><span class="badge bg-success shadow-sm px-3 py-2 rounded-pill animate__animated animate__pulse animate__infinite">🟢 ĐANG MỞ - VÀO THI</span></div>`;
+                    btnHtml = `<button class="btn btn-danger w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" onclick="openWaitingRoomMulti('${ex.id}', '${ex.examTitle}', '${ex.examSubject}', ${ex.examQuestions}, ${ex.examDuration})"><i class="bi bi-door-open-fill me-1"></i> BẮT ĐẦU LÀM BÀI</button>`;
                 }
-            } else {
-                statusHtml = `<div class="mt-2 text-center"><span class="badge bg-success shadow-sm px-3 py-2 rounded-pill animate__animated animate__pulse animate__infinite">🟢 ĐANG MỞ - VÀO THI</span></div>`;
-                btnHtml = `<button class="btn btn-danger w-100 fw-bold rounded-pill py-2 mt-2 shadow-sm" onclick="openWaitingRoomMulti('${ex.id}', '${ex.examTitle}', '${ex.examSubject}', ${ex.examQuestions}, ${ex.examDuration})"><i class="bi bi-door-open-fill me-1"></i> BẮT ĐẦU LÀM BÀI</button>`;
-            }
-            
-            newHtml += `
-            <div class="exam-card-item" id="card-${ex.id}" style="max-width: 360px; width: 100%; background: #ffffff; border: 2px solid ${borderColor}; border-radius: 12px; padding: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); text-align: center; position: relative;">
-                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: ${borderColor};"></div>
-                <div style="width: 50px; height: 50px; background: ${iconBg}; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin: 0 auto 10px auto;"><i class="bi bi-clipboard2-check-fill"></i></div>
-                <h3 style="color: ${titleColor}; font-weight: 800; font-size: 1.1rem; margin-bottom: 5px; text-transform: uppercase;">${ex.examTitle}</h3>
-                <p style="color: #6c757d; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px;"><i class="bi bi-journal-text me-1"></i> ${ex.examSubject} &nbsp;•&nbsp; ${ex.examQuestions} Câu</p>
-                ${statusHtml}
-                ${btnHtml}
-            </div>`;
-        });
-        if (!window.isDoingExam) { container.innerHTML = newHtml; container.dataset.examHash = currentHash; }
+                
+                newHtml += `
+                <div class="exam-card-item" id="card-${ex.id}" style="max-width: 360px; width: 100%; background: #ffffff; border: 2px solid ${borderColor}; border-radius: 12px; padding: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); text-align: center; position: relative;">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: ${borderColor};"></div>
+                    <div style="width: 50px; height: 50px; background: ${iconBg}; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin: 0 auto 10px auto;"><i class="bi bi-clipboard2-check-fill"></i></div>
+                    <h3 style="color: ${titleColor}; font-weight: 800; font-size: 1.1rem; margin-bottom: 5px; text-transform: uppercase;">${ex.examTitle}</h3>
+                    <p style="color: #6c757d; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px;"><i class="bi bi-journal-text me-1"></i> ${ex.examSubject} &nbsp;•&nbsp; ${ex.examQuestions} Câu</p>
+                    ${statusHtml}
+                    ${btnHtml}
+                </div>`;
+            });
+            if (!window.isDoingExam) { container.innerHTML = newHtml; container.dataset.examHash = currentHash; }
+
+        }).getClassroomData(safeId, safeName); // Lồng lệnh vào đây!
+
     }).getAvailableExamsForStudent(safeId);
 }
 
