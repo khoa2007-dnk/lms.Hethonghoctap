@@ -1669,10 +1669,11 @@ window.createAPIChain = function(onSuccess, onFailure) {
             return async function(...args) {
                 try {
                     // 1. Liệt kê các lệnh "Đọc" dữ liệu nặng cần được tăng tốc
+                    // ĐÃ VÁ LỖI: Rút 'getAvailableExamsForStudent' khỏi danh sách này để chống hiện tượng chớp tắt (bóng ma)
                     const readActions = [
                         'getTeacherData', 'getAssignedLessons', 'getStudentList', 
                         'getStudentProfiles', 'getMultiExams', 'getUniqueClasses', 
-                        'getClassroomData', 'getAvailableExamsForStudent'
+                        'getClassroomData'
                     ];
                     const isReadAction = readActions.includes(prop);
                     
@@ -1701,7 +1702,11 @@ window.createAPIChain = function(onSuccess, onFailure) {
                             if (onSuccess) onSuccess(result); // Âm thầm cập nhật giao diện
                         }
                     } else {
-                        // Nếu là lệnh Ghi/Sửa/Xóa (VD: nộp bài, cho điểm) thì chạy bình thường
+                        // Tự động dọn dẹp rác bóng ma cũ trong máy học sinh
+                        if (prop === 'getAvailableExamsForStudent') {
+                            localStorage.removeItem(cacheKey);
+                        }
+                        // Nếu là lệnh Ghi/Sửa/Xóa hoặc lấy dữ liệu thì chạy bình thường
                         if (onSuccess) onSuccess(result);
                     }
                     
@@ -1714,7 +1719,6 @@ window.createAPIChain = function(onSuccess, onFailure) {
         }
     });
 };
-
 // Khai báo biến toàn cục tuyệt đối
 window.callAPI = window.createAPIChain(null, null);
     
