@@ -308,6 +308,28 @@
     .tf-progress { width: 65%; background: linear-gradient(90deg, #885CF6, #c4b5fd); height: 100%; border-radius: 10px; animation: trackSlide 2.5s ease-in-out infinite alternate; }
     @keyframes trackSlide { 0% { width: 40%; } 100% { width: 85%; } }
     @keyframes trackPulse { 0% { transform: scale(0.8); opacity: 0.8; } 100% { transform: scale(1.8); opacity: 0; } }
+    /* =================================================================== */
+    /* PREMIUM TABLE UI CHO QUẢN LÝ HỌC SINH                               */
+    /* =================================================================== */
+    .premium-table-wrapper { background: #fff; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); padding: 20px; border: 1px solid #e2e8f0; width: 100%; }
+    .premium-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+    .premium-table th { background-color: #3b82f6; color: white; padding: 14px 16px; font-weight: 600; font-size: 0.9rem; border: none; text-transform: capitalize; }
+    .premium-table th:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+    .premium-table th:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+    .premium-table td { padding: 12px 16px; vertical-align: middle; background: #ffffff; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; transition: all 0.2s ease; }
+    .premium-table td:first-child { border-left: 1px solid #f1f5f9; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+    .premium-table td:last-child { border-right: 1px solid #f1f5f9; border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+    .premium-table tbody tr:hover td { background: #f8fafc; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); cursor: pointer; }
+    .user-avatar-prm { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.1rem; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .status-badge-prm { padding: 5px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; display: inline-block; }
+    .status-active { background: #dcfce7; color: #15803d; }
+    .status-pending { background: #fef08a; color: #a16207; }
+    .status-offline { background: #fee2e2; color: #b91c1c; }
+    .premium-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+    .premium-search-box { position: relative; flex-grow: 1; max-width: 400px; }
+    .premium-search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.1rem; }
+    .premium-search-box input { padding-left: 45px; border-radius: 12px; border: 1px solid #cbd5e1; background: #f8fafc; padding-top: 10px; padding-bottom: 10px; font-weight: 600; color: #334155; }
+    .premium-search-box input:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.1); background: #ffffff; }
 /* =================================================================== */
     /* MENU SIDEBAR THU GỌN / MỞ RỘNG KIỂU SAAS                            */
     /* =================================================================== */
@@ -1071,15 +1093,22 @@
   <div class="modal fade" id="studentProfileModal" tabindex="-1" style="backdrop-filter: blur(5px); background-color: rgba(0,0,0,0.4);">
     <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
       <div class="modal-content">
-        <div class="modal-header bg-warning text-dark"><h5 class="fw-bold">Quản lý Học sinh</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-header bg-primary text-white"><h5 class="fw-bold">Quản lý Học sinh</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body bg-light" id="student-modal-body">
-          <div id="student-list-view">
-            <div class="row mb-3 g-2">
-              <div class="col-md-3"><select id="filter-grade" class="form-select border-warning shadow-sm fw-bold" onchange="renderStudentList()"><option value="ALL">🏫 Mọi khối</option></select></div>
-              <div class="col-md-6"><input type="text" id="search-student" class="form-control border-warning shadow-sm" placeholder="Tìm tên/mã học sinh..." onkeyup="renderStudentList()"></div>
-              <div class="col-md-3"><button class="btn btn-warning w-100 fw-bold shadow-sm text-dark" onclick="openAddStudentModal()"><i class="bi bi-person-plus-fill"></i> Tạo Tài Khoản</button></div>
+          <div id="student-list-view" class="premium-table-wrapper">
+            <div class="premium-toolbar">
+              <div class="premium-search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" id="search-student" class="form-control shadow-sm" placeholder="Tìm tên, mã học sinh..." onkeyup="renderStudentList()">
+              </div>
+              <div class="d-flex gap-2">
+                <select id="filter-grade" class="form-select border-secondary text-secondary fw-bold shadow-sm" style="border-radius: 10px; max-width: 140px;" onchange="renderStudentList()">
+                    <option value="ALL"><i class="bi bi-funnel"></i> Mọi khối</option>
+                </select>
+                <button class="btn btn-primary fw-bold shadow-sm" style="border-radius: 10px; background-color: #3b82f6; border-color: #3b82f6;" onclick="openAddStudentModal()"><i class="bi bi-plus-lg me-1"></i> Add User</button>
+              </div>
             </div>
-            <div class="row g-3" id="students-container"></div>
+            <div id="students-container"></div>
           </div>
           <div id="student-detail-view" style="display:none">
             <div class="d-flex justify-content-between mb-3">
@@ -2711,46 +2740,89 @@ function submitAssignment() {
   } 
 }
 
-// --- VẼ DANH SÁCH HỌC SINH CÓ NÚT XÓA ---
+// --- VẼ DANH SÁCH HỌC SINH (PREMIUM TABLE UI) ---
 function renderStudentList() { 
-  const gradeFilter = document.getElementById('filter-grade').value; 
-  const searchStr = document.getElementById('search-student').value.toLowerCase(); 
-  const container = document.getElementById('students-container'); 
-  container.innerHTML = ''; 
-  const filtered = globalStudentsData.filter(s => { const matchGrade = (gradeFilter === 'ALL' || s.grade === gradeFilter); const matchSearch = s.name.toLowerCase().includes(searchStr) || s.id.toLowerCase().includes(searchStr); return matchGrade && matchSearch; }); 
-  
-  if(filtered.length === 0) { container.innerHTML = '<div class="col-12 text-center text-muted py-5 fw-bold fs-5">Không tìm thấy học sinh nào.</div>'; return; } 
-  filtered.forEach(s => { 
-    let progressPercent = s.assigned > 0 ? Math.round((s.submitted / s.assigned) * 100) : 0; 
-    let progressColor = progressPercent >= 80 ? 'bg-success' : (progressPercent >= 50 ? 'bg-warning' : 'bg-danger'); 
+    const gradeFilter = document.getElementById('filter-grade').value; 
+    const searchStr = document.getElementById('search-student').value.toLowerCase(); 
+    const container = document.getElementById('students-container'); 
+    container.innerHTML = ''; 
     
-    // Tạo nhãn chứa mật khẩu (nếu có)
-    let passHtml = s.pass ? `<span class="badge bg-warning text-dark border border-warning shadow-sm" style="font-size: 0.75rem;"><i class="bi bi-key-fill"></i> ${s.pass}</span>` : '';
+    const filtered = globalStudentsData.filter(s => { 
+        const matchGrade = (gradeFilter === 'ALL' || s.grade === gradeFilter); 
+        const matchSearch = s.name.toLowerCase().includes(searchStr) || s.id.toLowerCase().includes(searchStr); 
+        return matchGrade && matchSearch; 
+    }); 
+    
+    if(filtered.length === 0) { 
+        container.innerHTML = '<div class="col-12 text-center text-muted py-5 fw-bold fs-5">Không tìm thấy dữ liệu người dùng.</div>'; 
+        return; 
+    } 
 
-    container.innerHTML += `
-    <div class="col-md-6 col-lg-4">
-        <label class="premium-checkbox card h-100 p-3 shadow-sm border-0 rounded-4 m-0 w-100" style="cursor:pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'" onclick="viewStudentDetail('${s.id}')">
-             <!-- Vẫn giữ chức năng Xóa tài khoản, nhưng không dùng checkbox ở đây -->
-             <div class="d-flex justify-content-between align-items-start mb-2 w-100">
-                <div>
-                    <h6 class="fw-bold text-primary mb-1 d-flex align-items-center flex-wrap gap-1">
-                        <span class="text-truncate" style="max-width: 130px;">${s.name}</span> 
-                        ${passHtml}
-                    </h6>
-                    <small class="text-muted fw-bold"><i class="bi bi-person-vcard"></i> ${s.id}</small>
+    let html = `
+    <div class="table-responsive w-100 pb-2">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th style="width: 40px; text-align: center;"><input type="checkbox" class="form-check-input shadow-none"></th>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th style="text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    // Mảng màu sắc ngẫu nhiên cho Avatar giống thiết kế
+    const avatarColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9'];
+
+    filtered.forEach(s => { 
+        // Tính phần trăm để định đoạt Status
+        let progressPercent = s.assigned > 0 ? Math.round((s.submitted / s.assigned) * 100) : 0; 
+        
+        let statusClass = "status-offline"; 
+        let statusText = "Offline"; 
+        if (progressPercent >= 80) { statusClass = "status-active"; statusText = "Active"; }
+        else if (progressPercent >= 40) { statusClass = "status-pending"; statusText = "Pending"; }
+
+        // Lấy chữ cái đầu của Tên và Họ làm Avatar
+        let nameParts = s.name.trim().split(' ');
+        let initials = nameParts.length > 1 ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]) : nameParts[0].substring(0, 2);
+        initials = initials.toUpperCase();
+        
+        let colorIdx = s.name.length % avatarColors.length;
+        let aColor = avatarColors[colorIdx];
+
+        let passHtml = s.pass ? `<span class="badge bg-light text-secondary border ms-2 fw-normal" style="font-size: 0.65rem;" title="Mật khẩu"><i class="bi bi-key-fill"></i> ${s.pass}</span>` : '';
+
+        html += `
+        <tr onclick="viewStudentDetail('${s.id}')">
+            <td style="text-align: center;" onclick="event.stopPropagation();"><input type="checkbox" class="form-check-input shadow-none stu-cb-prm" value="${s.id}"></td>
+            <td>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="user-avatar-prm" style="background-color: ${aColor};">${initials}</div>
+                    <div>
+                        <div class="fw-bold text-dark d-flex align-items-center" style="font-size: 0.95rem;">${s.name} ${passHtml}</div>
+                        <div class="small text-muted fw-bold">${s.id}</div>
+                    </div>
                 </div>
-                <div class="text-end">
-                    <span class="badge bg-light text-dark border border-secondary shadow-sm py-1 px-2 mb-1 d-block">Khối ${s.grade}</span>
-                    <button class="btn btn-sm btn-outline-danger py-0 px-2 fw-bold position-relative" style="font-size: 0.7rem; z-index: 2;" onclick="event.stopPropagation(); confirmDeleteStudent('${s.id}', '${s.name}')"><i class="bi bi-trash-fill"></i> Xóa</button>
-                </div>
-            </div>
-            <div class="d-flex justify-content-between small mb-1 mt-2 w-100"><span class="text-secondary fw-bold">Tiến độ nộp bài:</span><span class="fw-bold text-dark fs-6">${s.submitted} / ${s.assigned}</span></div>
-            <div class="progress shadow-sm w-100" style="height: 8px; border-radius: 10px;"><div class="progress-bar ${progressColor}" style="width: ${progressPercent}%"></div></div>
-        </label>
-    </div>`; 
-  });
+            </td>
+            <td>
+                <span class="text-secondary fw-bold" style="font-size: 0.85rem;">Khối ${s.grade}</span>
+            </td>
+            <td>
+                <span class="status-badge-prm ${statusClass}">${statusText}</span>
+            </td>
+            <td style="text-align: center;" onclick="event.stopPropagation();">
+                <button class="btn btn-sm btn-light text-secondary border-0 shadow-sm me-1" onclick="viewStudentDetail('${s.id}')" title="Chi tiết"><i class="bi bi-three-dots"></i></button>
+                <button class="btn btn-sm btn-light text-danger border-0 shadow-sm" onclick="confirmDeleteStudent('${s.id}', '${s.name}')" title="Xóa"><i class="bi bi-trash3-fill"></i></button>
+            </td>
+        </tr>`; 
+    });
+
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
 }
-
 // --- HÀM XỬ LÝ TẠO TÀI KHOẢN MỚI ---
 function openAddStudentModal() {
     document.getElementById('new-student-id').value = '';
