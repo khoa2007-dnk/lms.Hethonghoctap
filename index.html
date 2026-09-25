@@ -2623,12 +2623,13 @@ function loadLessons() {
           timeHtml = `<div class="text-warning small fw-bold mt-1 mb-2 shadow-sm" style="background:#343a40; padding:6px 10px; border-radius:6px; display:inline-block;"><i class="bi bi-stopwatch-fill me-1"></i>Mở tự động lúc: ${item.scheduledTime.split('T').join(' ')}</div>`;
       }
 
-      let fileBtnHtml = "";
+     let fileBtnHtml = "";
       if (item.link && !item.isLocked) { 
         let links = item.link.toString().split(',').map(u => u.trim()).filter(u => u !== "");
         links.forEach((url, idx) => {
           let label = links.length > 1 ? `Đề ${idx + 1}` : `Xem đề bài`;
-          fileBtnHtml += `<a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary mt-2 me-2 rounded-pill fw-bold shadow-sm" onclick="event.stopPropagation();"><i class="bi bi-cloud-arrow-down-fill"></i> ${label}</a>`;
+          // ĐÃ SỬA: Biến thẻ <a> thành <button> để gọi hàm đọc PDF nội bộ
+          fileBtnHtml += `<button type="button" class="btn btn-sm btn-outline-primary mt-2 me-2 rounded-pill fw-bold shadow-sm" onclick="event.stopPropagation(); window.openPDFViewer('${url}', '${item.title} - ${label}')"><i class="bi bi-file-earmark-pdf"></i> ${label}</button>`;
         });
       }
 
@@ -2645,9 +2646,10 @@ function loadLessons() {
               }
           }
           if (canView) {
-              solutionBtnHtml = `<a href="${item.solutionLink}" target="_blank" class="btn btn-sm btn-success mt-2 me-2 rounded-pill fw-bold shadow-sm" onclick="event.stopPropagation();"><i class="bi bi-unlock-fill"></i> Bí Kíp</a>`;
+              // ĐÃ SỬA: Biến thẻ <a> thành <button> để gọi hàm đọc PDF nội bộ
+              solutionBtnHtml = `<button type="button" class="btn btn-sm btn-success mt-2 me-2 rounded-pill fw-bold shadow-sm" onclick="event.stopPropagation(); window.openPDFViewer('${item.solutionLink}', '${item.title} - Bí Kíp')"><i class="bi bi-lightbulb-fill"></i> Bí Kíp</button>`;
           } else {
-              solutionBtnHtml = `<button class="btn btn-sm btn-secondary text-white mt-2 me-2 rounded-pill fw-bold shadow-sm" onclick="event.stopPropagation();" disabled>${lockMsg}</button>`;
+              solutionBtnHtml = `<button type="button" class="btn btn-sm btn-secondary text-white mt-2 me-2 rounded-pill fw-bold shadow-sm" onclick="event.stopPropagation();" disabled>${lockMsg}</button>`;
           }
       }
 
