@@ -2013,22 +2013,25 @@ function logout() {
     if (studentOverlay) studentOverlay.classList.remove('show');
 }
 
-// --- TRÌNH ĐỌC PDF NỘI BỘ ---
+// --- TRÌNH ĐỌC PDF NỘI BỘ (ĐÃ VÁ LỖI HIỂN THỊ) ---
 window.openPDFViewer = function(url, title) {
     let previewUrl = url;
-    // Tự động bóc tách ID file từ link Google Drive của thầy để ép sang chế độ Preview
+    // Bóc tách ID file từ link Google Drive
     const match = url.match(/[-\w]{25,}/);
     if (match) {
         previewUrl = `https://drive.google.com/file/d/${match[0]}/preview`;
     }
     
     document.getElementById('pdfViewerTitle').innerHTML = `<i class="bi bi-file-earmark-pdf-fill text-warning me-2"></i>${title.toUpperCase()}`;
-    document.getElementById('pdfLoadingSpinner').style.display = 'flex';
-    document.getElementById('pdfViewerFrame').style.display = 'none';
+    
+    // Khôi phục vòng xoay và làm mờ iframe trước khi nạp link mới
+    document.getElementById('pdfLoadingSpinner').style.display = 'block';
+    document.getElementById('pdfViewerFrame').style.opacity = '0';
     document.getElementById('pdfViewerFrame').src = previewUrl;
     
     let pdfModal = document.getElementById('pdfViewerModal');
-    // Xóa link khi đóng cửa sổ để giải phóng RAM
+    
+    // Xóa link khi đóng cửa sổ để giải phóng RAM và chặn phát âm thanh/video ngầm
     pdfModal.addEventListener('hidden.bs.modal', function () {
         document.getElementById('pdfViewerFrame').src = '';
     }, { once: true });
