@@ -1569,6 +1569,25 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal Trình Đọc PDF Toàn Màn Hình -->
+  <div class="modal fade" id="pdfViewerModal" tabindex="-1" aria-hidden="true" style="z-index: 1065; backdrop-filter: blur(5px);">
+    <div class="modal-dialog modal-fullscreen">
+      <div class="modal-content bg-dark border-0">
+        <div class="modal-header border-0 text-white" style="background-color: #004494; border-bottom: 3px solid #dc3545 !important; padding: 10px 20px;">
+          <h5 class="modal-title fw-bold" id="pdfViewerTitle"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>Trình Đọc Tài Liệu</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0" style="height: calc(100vh - 55px); background-color: #333;">
+          <div class="w-100 h-100 d-flex justify-content-center align-items-center" id="pdfLoadingSpinner">
+              <div class="spinner-border text-light" style="width: 3rem; height: 3rem;"></div>
+          </div>
+          <iframe id="pdfViewerFrame" src="" style="width: 100%; height: 100%; border: none; display: none;" allowfullscreen onload="document.getElementById('pdfLoadingSpinner').style.display='none'; this.style.display='block';"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <div class="modal fade" id="changePassModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="hcmue-modal-bar"></div><div class="modal-header bg-warning bg-opacity-10 text-dark border-bottom"><h5 class="modal-title"><i class="bi bi-key-fill me-2 text-warning"></i>ĐỔI MẬT KHẨU</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body p-4 bg-light"><label class="form-label fw-bold text-secondary small">Mật khẩu hiện tại</label><input type="password" id="old-pass" class="form-control p-3 mb-3 border-warning shadow-sm" placeholder="Nhập pass cũ..."><label class="form-label fw-bold text-secondary small">Mật khẩu mới</label><input type="password" id="new-pass" class="form-control p-3 border-warning shadow-sm" placeholder="Nhập pass mới..."></div><div class="modal-footer bg-white"><button id="btn-exec-change-pass" class="btn btn-warning w-100 py-3 rounded-pill fw-bold shadow" onclick="execChangePass()">XÁC NHẬN ĐỔI</button></div></div></div></div>
   <div class="modal fade" id="updateEmailModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-secondary text-white"><h5 class="fw-bold">Cập nhật Email</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-4"><input type="email" id="student-email-input" class="form-control p-3" placeholder="Nhập email..."></div><div class="modal-footer"><button class="btn btn-secondary w-100 py-3 rounded-pill fw-bold" onclick="execUpdateEmail()">LƯU EMAIL</button></div></div></div></div>
 
@@ -1992,6 +2011,29 @@ function logout() {
     if (studentOverlay) studentOverlay.classList.remove('show');
 }
 
+// --- TRÌNH ĐỌC PDF NỘI BỘ ---
+window.openPDFViewer = function(url, title) {
+    let previewUrl = url;
+    // Tự động bóc tách ID file từ link Google Drive của thầy để ép sang chế độ Preview
+    const match = url.match(/[-\w]{25,}/);
+    if (match) {
+        previewUrl = `https://drive.google.com/file/d/${match[0]}/preview`;
+    }
+    
+    document.getElementById('pdfViewerTitle').innerHTML = `<i class="bi bi-file-earmark-pdf-fill text-warning me-2"></i>${title.toUpperCase()}`;
+    document.getElementById('pdfLoadingSpinner').style.display = 'flex';
+    document.getElementById('pdfViewerFrame').style.display = 'none';
+    document.getElementById('pdfViewerFrame').src = previewUrl;
+    
+    let pdfModal = document.getElementById('pdfViewerModal');
+    // Xóa link khi đóng cửa sổ để giải phóng RAM
+    pdfModal.addEventListener('hidden.bs.modal', function () {
+        document.getElementById('pdfViewerFrame').src = '';
+    }, { once: true });
+
+    bootstrap.Modal.getOrCreateInstance(pdfModal).show();
+};
+    
 // ===================================================================
 // CHỨC NĂNG GIAO BÀI (GIÁO VIÊN)
 // ===================================================================
@@ -2726,7 +2768,11 @@ function openLessonDetail(index) {
   let filesHtml = "";
   if (item.link) {
     let links = item.link.split(',').map(u => u.trim()).filter(u => u !== "");
-    links.forEach((url, i) => { filesHtml += `<a href="${url}" target="_blank" class="btn btn-outline-primary d-block mb-2 fw-bold shadow-sm rounded-pill"><i class="bi bi-file-earmark-pdf"></i> Xem Đề Bài ${links.length > 1 ? i+1 : ''}</a>`; });
+    links.forEach((url, i) => { 
+        let label = links.length > 1 ? `Đề Bài ${i+1}` : `Xem Đề Bài`;
+        // Đã đổi thành Nút gọi trình đọc PDF nội bộ
+        filesHtml += `<button type="button" class="btn btn-outline-primary d-block mb-2 w-100 fw-bold shadow-sm rounded-pill" onclick="event.stopPropagation(); window.openPDFViewer('${url}', '${item.title} - ${label}')"><i class="bi bi-file-earmark-pdf"></i> ${label}</button>`; 
+    });
   }
 
   let solBtnHtml = "";
@@ -2740,7 +2786,10 @@ function openLessonDetail(index) {
       else { lockMsg = `🔒 Lời giải sẽ mở lúc: ${item.unlockRule}`; }
     }
 
-    if (canView) { solBtnHtml = `<a href="${item.solutionLink}" target="_blank" class="btn btn-success d-block mb-3 fw-bold shadow-sm rounded-pill animate__animated animate__pulse animate__infinite"><i class="bi bi-lightbulb-fill"></i> BÍ KÍP GIẢI CHI TIẾT</a>`; } 
+    if (canView) { 
+        // Đã đổi thành Nút gọi trình đọc PDF nội bộ
+        solBtnHtml = `<button type="button" class="btn btn-success w-100 d-block mb-3 fw-bold shadow-sm rounded-pill animate__animated animate__pulse animate__infinite" onclick="event.stopPropagation(); window.openPDFViewer('${item.solutionLink}', '${item.title} - Lời giải chi tiết')"><i class="bi bi-lightbulb-fill"></i> BÍ KÍP GIẢI CHI TIẾT</button>`; 
+    } 
     else { solBtnHtml = `<div class="alert alert-secondary py-2 px-3 text-center mb-3 rounded-4 border-0 shadow-sm"><small class="fw-bold text-muted">${lockMsg}</small></div>`; }
   }
 
