@@ -1578,11 +1578,13 @@
           <h5 class="modal-title fw-bold" id="pdfViewerTitle"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>Trình Đọc Tài Liệu</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-0" style="height: calc(100vh - 55px); background-color: #333;">
-          <div class="w-100 h-100 d-flex justify-content-center align-items-center" id="pdfLoadingSpinner">
+        <div class="modal-body p-0 position-relative" style="height: calc(100vh - 55px); background-color: #333;">
+          <!-- Vòng xoay đặt ở lớp dưới cùng -->
+          <div class="position-absolute top-50 start-50 translate-middle" id="pdfLoadingSpinner" style="z-index: 1;">
               <div class="spinner-border text-light" style="width: 3rem; height: 3rem;"></div>
           </div>
-          <iframe id="pdfViewerFrame" src="" style="width: 100%; height: 100%; border: none; display: none;" allowfullscreen onload="document.getElementById('pdfLoadingSpinner').style.display='none'; this.style.display='block';"></iframe>
+          <!-- Iframe đặt đè lên trên, ban đầu làm mờ (opacity: 0). Khi tải xong sẽ hiện rõ lên (opacity: 1) -->
+          <iframe id="pdfViewerFrame" src="" style="width: 100%; height: 100%; border: none; position: relative; z-index: 2; opacity: 0; transition: opacity 0.4s ease;" allowfullscreen onload="document.getElementById('pdfLoadingSpinner').style.display='none'; this.style.opacity='1';"></iframe>
         </div>
       </div>
     </div>
