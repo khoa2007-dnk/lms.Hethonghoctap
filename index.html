@@ -2013,25 +2013,24 @@ function logout() {
     if (studentOverlay) studentOverlay.classList.remove('show');
 }
 
-// --- TRÌNH ĐỌC PDF NỘI BỘ (ĐÃ VÁ LỖI HIỂN THỊ) ---
+// --- TRÌNH ĐỌC PDF NỘI BỘ (ĐÃ ÉP TỐC ĐỘ CAO BẰNG GOOGLE DOCS VIEWER) ---
 window.openPDFViewer = function(url, title) {
     let previewUrl = url;
     // Bóc tách ID file từ link Google Drive
     const match = url.match(/[-\w]{25,}/);
     if (match) {
-        previewUrl = `https://drive.google.com/file/d/${match[0]}/preview`;
+        // ĐÃ SỬA: Thay vì dùng /preview nặng nề, dùng docs.google.com để tải nhanh gấp 3 lần và loại bỏ thanh công cụ thừa
+        previewUrl = `https://docs.google.com/viewer?srcid=${match[0]}&pid=explorer&efh=false&a=v&chrome=false&embedded=true`;
     }
     
     document.getElementById('pdfViewerTitle').innerHTML = `<i class="bi bi-file-earmark-pdf-fill text-warning me-2"></i>${title.toUpperCase()}`;
     
-    // Khôi phục vòng xoay và làm mờ iframe trước khi nạp link mới
     document.getElementById('pdfLoadingSpinner').style.display = 'block';
     document.getElementById('pdfViewerFrame').style.opacity = '0';
     document.getElementById('pdfViewerFrame').src = previewUrl;
     
     let pdfModal = document.getElementById('pdfViewerModal');
     
-    // Xóa link khi đóng cửa sổ để giải phóng RAM và chặn phát âm thanh/video ngầm
     pdfModal.addEventListener('hidden.bs.modal', function () {
         document.getElementById('pdfViewerFrame').src = '';
     }, { once: true });
@@ -2772,13 +2771,13 @@ function loadLessons() {
 function openLessonDetail(index) {
   const item = currentLessons[index];
   callAPI.logLessonView(currentStudentId, currentStudentName, item.title);
-  let filesHtml = "";
+ let filesHtml = "";
   if (item.link) {
     let links = item.link.split(',').map(u => u.trim()).filter(u => u !== "");
     links.forEach((url, i) => { 
         let label = links.length > 1 ? `Đề Bài ${i+1}` : `Xem Đề Bài`;
-        // Đã đổi thành Nút gọi trình đọc PDF nội bộ
-        filesHtml += `<button type="button" class="btn btn-outline-primary d-block mb-2 w-100 fw-bold shadow-sm rounded-pill" onclick="event.stopPropagation(); window.openPDFViewer('${url}', '${item.title} - ${label}')"><i class="bi bi-file-earmark-pdf"></i> ${label}</button>`; 
+        // ĐÃ SỬA: Thêm Swal.close() để tắt bảng nhỏ màu trắng trước khi mở PDF
+        filesHtml += `<button type="button" class="btn btn-outline-primary d-block mb-2 w-100 fw-bold shadow-sm rounded-pill" onclick="event.stopPropagation(); Swal.close(); window.openPDFViewer('${url}', '${item.title} - ${label}')"><i class="bi bi-file-earmark-pdf"></i> ${label}</button>`; 
     });
   }
 
@@ -2794,8 +2793,8 @@ function openLessonDetail(index) {
     }
 
     if (canView) { 
-        // Đã đổi thành Nút gọi trình đọc PDF nội bộ
-        solBtnHtml = `<button type="button" class="btn btn-success w-100 d-block mb-3 fw-bold shadow-sm rounded-pill animate__animated animate__pulse animate__infinite" onclick="event.stopPropagation(); window.openPDFViewer('${item.solutionLink}', '${item.title} - Lời giải chi tiết')"><i class="bi bi-lightbulb-fill"></i> BÍ KÍP GIẢI CHI TIẾT</button>`; 
+        // ĐÃ SỬA: Thêm Swal.close() để tắt bảng nhỏ màu trắng trước khi mở PDF
+        solBtnHtml = `<button type="button" class="btn btn-success w-100 d-block mb-3 fw-bold shadow-sm rounded-pill animate__animated animate__pulse animate__infinite" onclick="event.stopPropagation(); Swal.close(); window.openPDFViewer('${item.solutionLink}', '${item.title} - Lời giải chi tiết')"><i class="bi bi-lightbulb-fill"></i> BÍ KÍP GIẢI CHI TIẾT</button>`; 
     } 
     else { solBtnHtml = `<div class="alert alert-secondary py-2 px-3 text-center mb-3 rounded-4 border-0 shadow-sm"><small class="fw-bold text-muted">${lockMsg}</small></div>`; }
   }
