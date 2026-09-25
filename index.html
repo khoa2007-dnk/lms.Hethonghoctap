@@ -2013,24 +2013,26 @@ function logout() {
     if (studentOverlay) studentOverlay.classList.remove('show');
 }
 
-// --- TRÌNH ĐỌC PDF NỘI BỘ (ĐÃ ÉP TỐC ĐỘ CAO BẰNG GOOGLE DOCS VIEWER) ---
+// --- TRÌNH ĐỌC PDF NỘI BỘ (BẢN ỔN ĐỊNH TUYỆT ĐỐI) ---
 window.openPDFViewer = function(url, title) {
     let previewUrl = url;
     // Bóc tách ID file từ link Google Drive
     const match = url.match(/[-\w]{25,}/);
     if (match) {
-        // ĐÃ SỬA: Thay vì dùng /preview nặng nề, dùng docs.google.com để tải nhanh gấp 3 lần và loại bỏ thanh công cụ thừa
-        previewUrl = `https://docs.google.com/viewer?srcid=${match[0]}&pid=explorer&efh=false&a=v&chrome=false&embedded=true`;
+        // TRẢ VỀ LINK PREVIEW GỐC CỦA GOOGLE DRIVE ĐỂ ĐẢM BẢO KHÔNG BỊ CHẶN BỞI TRÌNH DUYỆT
+        previewUrl = `https://drive.google.com/file/d/${match[0]}/preview`;
     }
     
     document.getElementById('pdfViewerTitle').innerHTML = `<i class="bi bi-file-earmark-pdf-fill text-warning me-2"></i>${title.toUpperCase()}`;
     
+    // Bật vòng xoay chờ và làm mờ iframe
     document.getElementById('pdfLoadingSpinner').style.display = 'block';
     document.getElementById('pdfViewerFrame').style.opacity = '0';
     document.getElementById('pdfViewerFrame').src = previewUrl;
     
     let pdfModal = document.getElementById('pdfViewerModal');
     
+    // Xóa link khi đóng cửa sổ
     pdfModal.addEventListener('hidden.bs.modal', function () {
         document.getElementById('pdfViewerFrame').src = '';
     }, { once: true });
