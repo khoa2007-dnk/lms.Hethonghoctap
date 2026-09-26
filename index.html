@@ -3785,6 +3785,7 @@ function openExamReviewMulti(examId) {
     openTeacherReviewMulti(window.currentStudentId || session.id || "HS_TEST", examId, window.currentStudentName || session.name || "Học Sinh");
 }
 
+// --- HÀM XEM LẠI BÀI LÀM (HIỂN THỊ RÕ SỐ Ý ĐÚNG / SAI) ---
 function openTeacherReviewMulti(studentId, examId, studentName) {
     Swal.fire({ title: 'Đang tải bài làm...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
     callAPI.then(function(res) {
@@ -3811,30 +3812,72 @@ function openTeacherReviewMulti(studentId, examId, studentName) {
         let qHtml = ''; let stuAns = res.studentAnswers || {}; let ansKey = res.answerKey ? (typeof res.answerKey === 'string' ? JSON.parse(res.answerKey) : res.answerKey) : {};
 
         res.questions.forEach((q, index) => {
-            let qNum = index + 1; let sAns = String(stuAns[qNum] || stuAns[q.id] || '').trim().toUpperCase(); let cAns = String(ansKey[qNum] || q.correctAnswer || '').trim().toUpperCase();
-            let isCorrect = (sAns === cAns && cAns !== '');
-            let timeMs = (stuAns["_timeLogs"] && stuAns["_timeLogs"][qNum]) ? stuAns["_timeLogs"][qNum] : 0;
-            let timeSec = Math.round(timeMs / 1000); let timeWarning = timeSec < 5 ? `<span class="text-danger ms-2"><i class="bi bi-exclamation-triangle"></i> Lướt quá nhanh</span>` : '';
+            let qNum = index + 1; 
+            
+            let sAnsRaw = stuAns[qNum] || stuAns[q.id] || '';
+            let cAnsRaw = ansKey[qNum] || q.correctAnswer || '';
+            let sAnsArr = Array.isArray(sAnsRaw) ? sAnsRaw : String(sAnsRaw).toUpperCase().split(',').map(x => x.trim()).filter(x => x);
+            let cAnsArr = Array.isArray(cAnsRaw) ? cAnsRaw : String(cAnsRaw).toUpperCase().split(',').map(x => x.trim()).filter(x => x);
 
-            let navBg = isCorrect ? '#198754' : (sAns === '' ? '#e9ecef' : '#dc3545'); let navColor = (sAns === '') ? '#6c757d' : '#fff';
+            let hasWrong = sAnsArr.some(ans => !cAnsArr.includes(ans));
+            let correctCount = sAnsArr.filter(ans => cAnsArr.includes(ans)).length;
+            
+            let isPerfect = (!hasWrong && correctCount === cAnsArr.length && cAnsArr.length > 0);
+            let isPartial = (!hasWrong && correctCount > 0 && correctCount < cAnsArr.length);
+            let isEmpty = (sAnsArr.length === 0);
+            let isWrong = (!isEmpty && !isPerfect && !isPartial); // Có chọn sai (bị 0 điểm)
+
+            let timeMs = (stuAns["_timeLogs"] && stuAns["_timeLogs"][qNum]) ? stuAns["_timeLogs"][qNum] : 0;
+            let timeSec = Math.round(timeMs / 1000); let timeWarning = (!isEmpty && timeSec < 5) ? `<span class="text-danger ms-2"><i class="bi bi-exclamation-triangle"></i> Lướt quá nhanh</span>` : '';
+
+            let navBg = isPerfect ? '#198754' : (isPartial ? '#ffc107' : (isEmpty ? '#e9ecef' : '#dc3545')); 
+            let navColor = (isEmpty || isPartial) ? '#212529' : '#fff';
             navContainer.insertAdjacentHTML('beforeend', `<div style="width:38px; height:38px; background:${navBg}; color:${navColor}; display:flex; align-items:center; justify-content:center; border-radius:10px; cursor:pointer; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.1);" onclick="document.getElementById('multi-review-q-${qNum}').scrollIntoView({behavior: 'smooth', block: 'center'})">${qNum}</div>`);
 
+            let statusBadgeHtml = ''; let borderClass = '';
+            if (isEmpty) {
+                statusBadgeHtml = '<span class="badge bg-secondary fw-bold px-3 py-2 rounded-pill fs-6 shadow-sm">Câu ' + qNum + '</span><div class="fs-6"><b class="text-secondary"><i class="bi bi-dash-circle-fill"></i> Chưa làm</b></div>';
+                borderClass = '#adb5bd';
+            } else if (isPerfect) {
+                statusBadgeHtml = '<span class="badge bg-success fw-bold px-3 py-2 rounded-pill fs-6 shadow-sm">Câu ' + qNum + '</span><div class="fs-6"><b class="text-success"><i class="bi bi-check-circle-fill"></i> Chính xác</b></div>';
+                borderClass = '#198754';
+            } else if (isPartial) {
+                // ĐÃ SỬA: Hiển thị đúng số lượng ý
+                statusBadgeHtml = '<span class="badge bg-warning text-dark fw-bold px-3 py-2 rounded-pill fs-6 shadow-sm">Câu ' + qNum + '</span><div class="fs-6"><b class="text-warning"><i class="bi bi-star-half"></i> Đúng ' + correctCount + ' ý (50% điểm)</b></div>';
+                borderClass = '#ffc107';
+            } else {
+                // ĐÃ SỬA: Cảnh báo 0 điểm nếu dính 1 ý sai
+                statusBadgeHtml = '<span class="badge bg-danger fw-bold px-3 py-2 rounded-pill fs-6 shadow-sm">Câu ' + qNum + '</span><div class="fs-6"><b class="text-danger"><i class="bi bi-x-circle-fill"></i> Sai (0 điểm)</b></div>';
+                borderClass = '#dc3545';
+            }
+
             qHtml += `
-            <div class="card shadow-sm rounded-4 mb-4 p-4" id="multi-review-q-${qNum}" style="border: 1px solid #dee2e6; border-left: 6px solid ${isCorrect ? '#198754' : (sAns === '' ? '#adb5bd' : '#dc3545')}; background:#ffffff; text-align:left;">
-                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2"><span class="badge ${isCorrect ? 'bg-success' : (sAns === '' ? 'bg-secondary' : 'bg-danger')} fw-bold px-3 py-2 rounded-pill fs-6 shadow-sm">Câu ${qNum}</span><div class="fs-6">${isCorrect ? '<b class="text-success"><i class="bi bi-check-circle-fill"></i> Chính xác</b>' : (sAns === '' ? '<b class="text-secondary"><i class="bi bi-dash-circle-fill"></i> Chưa làm</b>' : '<b class="text-danger"><i class="bi bi-x-circle-fill"></i> Sai</b>')}</div></div>
+            <div class="card shadow-sm rounded-4 mb-4 p-4" id="multi-review-q-${qNum}" style="border: 1px solid #dee2e6; border-left: 6px solid ${borderClass}; background:#ffffff; text-align:left;">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">${statusBadgeHtml}</div>
                 <div class="text-primary small fw-bold mb-3 border-bottom pb-2"><i class="bi bi-stopwatch"></i> Thời gian dừng ở câu này: <b>${timeSec} giây</b> ${timeWarning}</div><div class="mb-4 text-dark fw-bold fs-5" style="line-height: 1.6;">${q.content}</div>`;
 
             if (q.type === "TRAC_NGHIEM" || q.type === "NHIEU_DAP_AN") {
                 let choices = [{ key: 'A', text: q.optA }, { key: 'B', text: q.optB }, { key: 'C', text: q.optC }, { key: 'D', text: q.optD }];
                 qHtml += `<div class="list-group gap-2">`;
                 choices.forEach(ch => {
-                    if(!ch.text) return; let isSelected = sAns.includes(ch.key); let isRight = cAns.includes(ch.key);
+                    if(!ch.text) return; 
+                    let isSelected = sAnsArr.includes(ch.key); 
+                    let isRight = cAnsArr.includes(ch.key);
+                    
                     let chStyle = "background: #f8f9fa; color: #212529; border: 1px solid #dee2e6;"; let icon = '';
-                    if (isRight) { chStyle = "background: #e8f5e9; color: #1b5e20; border: 2px solid #2e7d32; font-weight: bold;"; icon = '<i class="bi bi-check-circle-fill ms-auto fs-5 text-success"></i>'; } else if (isSelected && !isRight) { chStyle = "background: #ffebee; color: #c62828; border: 2px solid #c62828;"; icon = '<i class="bi bi-x-circle-fill ms-auto fs-5 text-danger"></i>'; }
+                    if (isRight && isSelected) { 
+                        chStyle = "background: #e8f5e9; color: #1b5e20; border: 2px solid #2e7d32; font-weight: bold;"; icon = '<i class="bi bi-check-circle-fill ms-auto fs-5 text-success"></i>'; 
+                    } else if (isRight && !isSelected) { 
+                        chStyle = "background: #f8f9fa; color: #1b5e20; border: 2px dashed #2e7d32;"; icon = '<i class="bi bi-check-circle ms-auto fs-5 text-success opacity-50" title="Đáp án đúng nhưng bị bỏ lỡ"></i>'; 
+                    } else if (isSelected && !isRight) { 
+                        chStyle = "background: #ffebee; color: #c62828; border: 2px solid #c62828;"; icon = '<i class="bi bi-x-circle-fill ms-auto fs-5 text-danger"></i>'; 
+                    }
                     qHtml += `<div class="list-group-item d-flex align-items-center p-3 rounded-3 shadow-sm" style="${chStyle}"><b class="me-3 fs-5">${ch.key}.</b> <span class="fs-6">${ch.text}</span> ${icon}</div>`;
                 });
                 qHtml += `</div>`;
-            } else { qHtml += `<div class="bg-light p-3 rounded-3 border border-2 border-secondary border-opacity-25"><div class="mb-2 fs-6"><b>Bài làm:</b> <span class="${isCorrect ? 'text-success fw-bold' : 'text-danger fw-bold'}">${sAns || 'Trống'}</span></div><div class="fs-6"><b>Đáp án đúng:</b> <span class="text-success fw-bold">${cAns}</span></div></div>`; }
+            } else { 
+                qHtml += `<div class="bg-light p-3 rounded-3 border border-2 border-secondary border-opacity-25"><div class="mb-2 fs-6"><b>Bài làm:</b> <span class="${isPerfect ? 'text-success fw-bold' : (isPartial ? 'text-warning fw-bold' : 'text-danger fw-bold')}">${sAnsArr.join(', ') || 'Trống'}</span></div><div class="fs-6"><b>Đáp án đúng:</b> <span class="text-success fw-bold">${cAnsArr.join(', ')}</span></div></div>`; 
+            }
             qHtml += `</div>`;
         });
         qContainer.innerHTML = qHtml;
